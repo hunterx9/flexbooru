@@ -1,4 +1,16 @@
 # Flexbooru
+
+This is my mod on flexbooru(checkout branch: dev not master) and all the changes in my build is listed below:
+1. all the dev booru are added by default and removed limit
+2. speed loading of posts for smooth experience   - enable preloading for pager adapter
+3. added post browse tap on screen to simulate swipe left/right for larger screens
+4. fixed tags in post fragment not showing relevant tags to the user
+5. changed from name to count query in searchtag for post fragment
+6. added support for hydrus -- https://github.com/hydrusnetwork/hydrus
+7. added support for idolcomplex
+8. added play button for gif and video
+    - gif play btn for saving bandwidth
+    - video play btn that shows preview instead of blank as vid loads
 A booru client for Android, support [Danbooru](https://github.com/r888888888/danbooru), [Moebooru](https://github.com/moebooru/moebooru), Gelbooru, Sankaku, etc.
 
 [![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/flexbooru)
