@@ -26,22 +26,20 @@ import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.android.billingclient.api.*
 import com.bumptech.glide.Glide
-import com.google.android.gms.ads.MobileAds
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader
-import com.mikepenz.materialdrawer.util.DrawerImageLoader
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import onlymash.flexbooru.R
 import onlymash.flexbooru.api.*
 import onlymash.flexbooru.crash.CrashHandler
 import onlymash.flexbooru.database.FlexbooruDatabase
-import onlymash.flexbooru.extension.getSignMd5
 import onlymash.flexbooru.glide.GlideApp
 import onlymash.flexbooru.repository.tagfilter.TagFilterRepositoryImpl
 import onlymash.flexbooru.ui.activity.PurchaseActivity
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
-import org.kodein.di.erased.*
+import org.kodein.di.erased.bind
+import org.kodein.di.erased.instance
+import org.kodein.di.erased.provider
+import org.kodein.di.erased.singleton
 import java.util.concurrent.Executors
 
 class App : Application(), KodeinAware {
@@ -65,11 +63,15 @@ class App : Application(), KodeinAware {
         bind() from singleton { instance<FlexbooruDatabase>().postMoeDao() }
         bind() from singleton { instance<FlexbooruDatabase>().postGelDao() }
         bind() from singleton { instance<FlexbooruDatabase>().postSankakuDao() }
+        bind() from singleton { instance<FlexbooruDatabase>().postIdolDao() }
+        bind() from singleton { instance<FlexbooruDatabase>().postHydrusDao() }
         bind() from singleton { DanbooruApi() }
         bind() from singleton { DanbooruOneApi() }
         bind() from singleton { MoebooruApi() }
         bind() from singleton { GelbooruApi() }
         bind() from singleton { SankakuApi() }
+        bind() from singleton { IdolApi() }
+        bind() from singleton { HydrusApi() }
         bind() from singleton { Executors.newSingleThreadExecutor() }
         bind() from singleton { TagFilterRepositoryImpl(instance()) }
     }
@@ -96,27 +98,29 @@ class App : Application(), KodeinAware {
     private fun initial() {
         CrashHandler.getInstance().init(this)
         AppCompatDelegate.setDefaultNightMode(Settings.nightMode)
-        MobileAds.initialize(this) {
-
-        }
-        val isGoogleSign = getSignMd5() == "777296a0fe4baa88c783d1cb18bdf1f2"
-        Settings.isGoogleSign = isGoogleSign
-        DrawerImageLoader.init(drawerImageLoader)
-        if (isGoogleSign) {
-            checkOrderFromCache()
-        } else {
-            val orderId = Settings.orderId
-            if (orderId.isNotEmpty()) {
-                GlobalScope.launch {
-                    OrderApi.orderChecker(orderId, Settings.orderDeviceId)
-                }
-            } else {
-                Settings.isOrderSuccess = false
-            }
-        }
+//        MobileAds.initialize(this) {
+//
+//        }
+        Settings.isOrderSuccess = true
+//        val isGoogleSign = getSignMd5() == "777296a0fe4baa88c783d1cb18bdf1f2"
+//        Settings.isGoogleSign = isGoogleSign
+//        DrawerImageLoader.init(drawerImageLoader)
+//        if (isGoogleSign) {
+//            checkOrderFromCache()
+//        } else {
+//            val orderId = Settings.orderId
+//            if (orderId.isNotEmpty()) {
+//                GlobalScope.launch {
+//                    OrderApi.orderChecker(orderId, Settings.orderDeviceId)
+//                }
+//            } else {
+//                Settings.isOrderSuccess = false
+//            }
+//        }
     }
 
     private fun checkOrderFromCache() {
+        Settings.isOrderSuccess = true
         val billingClient = BillingClient
             .newBuilder(this)
             .enablePendingPurchases()

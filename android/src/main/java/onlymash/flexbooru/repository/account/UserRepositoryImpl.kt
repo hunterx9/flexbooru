@@ -19,21 +19,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
+import onlymash.flexbooru.api.*
+import onlymash.flexbooru.api.url.*
 import onlymash.flexbooru.common.Constants
-import onlymash.flexbooru.api.url.MoeUrlHelper
-import onlymash.flexbooru.api.DanbooruApi
-import onlymash.flexbooru.api.DanbooruOneApi
-import onlymash.flexbooru.api.MoebooruApi
-import onlymash.flexbooru.api.SankakuApi
-import onlymash.flexbooru.api.url.DanOneUrlHelper
-import onlymash.flexbooru.api.url.DanUrlHelper
-import onlymash.flexbooru.api.url.SankakuUrlHelper
 import onlymash.flexbooru.database.CookieManager
 import onlymash.flexbooru.entity.common.Booru
 import onlymash.flexbooru.entity.common.User
 import onlymash.flexbooru.extension.NetResult
 import onlymash.flexbooru.util.Logger
-import java.util.HashMap
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 /**
@@ -42,7 +36,9 @@ import java.util.concurrent.TimeUnit
 class UserRepositoryImpl(private val danbooruApi: DanbooruApi,
                          private val danbooruOneApi: DanbooruOneApi,
                          private val moebooruApi: MoebooruApi,
-                         private val sankakuApi: SankakuApi) : UserRepository {
+                         private val sankakuApi: SankakuApi,
+                         private val hydrusApi: HydrusApi
+) : UserRepository {
 
     override suspend fun gelLogin(
         username: String,
@@ -138,6 +134,7 @@ class UserRepositoryImpl(private val danbooruApi: DanbooruApi,
             Constants.TYPE_MOEBOORU -> findMoeUser(username, booru)
             Constants.TYPE_DANBOORU_ONE -> findDanOneUser(username, booru)
             Constants.TYPE_SANKAKU -> findSankakuUser(username, booru)
+            Constants.TYPE_HYDRUS -> findHydrusUser(username, booru)
             else -> NetResult.Error("unknown type")
         }
     }
@@ -162,6 +159,33 @@ class UserRepositoryImpl(private val danbooruApi: DanbooruApi,
                     } else {
                         NetResult.Success(users[index])
                     }
+                } else {
+                    NetResult.Error("code: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                NetResult.Error(e.toString())
+            }
+        }
+    }
+
+    private suspend fun findHydrusUser(username: String, booru: Booru): NetResult<User> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = hydrusApi.getUsers(HydrusUrlHelper.getUserUrl(username, booru))
+                val users = response.body()
+                var user = User(
+                    uid = booru.uid,
+                    apiKey = booru.hashSalt,
+                    avatarUrl = "",
+                    booruUid = booru.uid,
+                    id = 123,
+                    name = "Hydrus",
+                    passwordHash = booru.hashSalt
+                )
+                if (response.isSuccessful && users != null) {
+
+                    NetResult.Success(user)
+
                 } else {
                     NetResult.Error("code: ${response.code()}")
                 }

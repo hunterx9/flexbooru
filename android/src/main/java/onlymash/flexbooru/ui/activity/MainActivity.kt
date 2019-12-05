@@ -20,6 +20,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.CompoundButton
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
@@ -32,13 +33,17 @@ import com.mikepenz.materialdrawer.AccountHeaderBuilder
 import com.mikepenz.materialdrawer.Drawer
 import com.mikepenz.materialdrawer.DrawerBuilder
 import com.mikepenz.materialdrawer.interfaces.OnCheckedChangeListener
-import com.mikepenz.materialdrawer.model.*
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem
+import com.mikepenz.materialdrawer.model.ProfileSettingDrawerItem
+import com.mikepenz.materialdrawer.model.SwitchDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IProfile
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import onlymash.flexbooru.*
+import onlymash.flexbooru.BuildConfig
+import onlymash.flexbooru.R
 import onlymash.flexbooru.api.AppUpdaterApi
 import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.common.Settings
@@ -46,20 +51,29 @@ import onlymash.flexbooru.database.BooruManager
 import onlymash.flexbooru.database.UserManager
 import onlymash.flexbooru.entity.common.Booru
 import onlymash.flexbooru.entity.common.User
-import onlymash.flexbooru.extension.*
+import onlymash.flexbooru.extension.launchUrl
+import onlymash.flexbooru.extension.openAppInMarket
+
 import onlymash.flexbooru.ui.adapter.NavPagerAdapter
 import org.kodein.di.erased.instance
 
 class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 
+    //    private var bottomSheet: BaseBottomSheet? = null
+//
+//    private fun showCustomBottomSheet() {
+//        //...
+//        bottomSheet = BtmSheet(this).also(BottomSheet::show)
+//    }
     companion object {
         private const val TAG = "MainActivity"
-        private const val BOORUS_LIMIT = 3
+        private const val BOORUS_LIMIT = 20
         private const val HEADER_ITEM_ID_BOORU_MANAGE = -100L
         private const val DRAWER_ITEM_ID_ACCOUNT = 1L
         private const val DRAWER_ITEM_ID_COMMENTS = 2L
         private const val DRAWER_ITEM_ID_TAG_BLACKLIST = 3L
         private const val DRAWER_ITEM_ID_MUZEI = 4L
+        private const val DRAWER_ITEM_ID_HYDRUS = 11L
         private const val DRAWER_ITEM_ID_SETTINGS = 5L
         private const val DRAWER_ITEM_ID_SAUCE_NAO = 6L
         private const val DRAWER_ITEM_ID_WHAT_ANIME = 7L
@@ -82,7 +96,9 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme_Main)
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         setContentView(R.layout.activity_main)
+//        showCustomBottomSheet()
         sp.registerOnSharedPreferenceChangeListener(this)
         profileSettingDrawerItem = ProfileSettingDrawerItem()
             .withName(R.string.title_manage_boorus)
@@ -117,6 +133,12 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                     .withSelectable(false)
                     .withIcon(AppCompatResources.getDrawable(this, R.drawable.ic_visibility_off_outline_24dp))
                     .withIconTintingEnabled(true),
+//                PrimaryDrawerItem()
+//                    .withIdentifier(DRAWER_ITEM_ID_HYDRUS)
+//                    .withName(R.string.title_hydrus)
+//                    .withSelectable(false)
+//                    .withIcon(AppCompatResources.getDrawable(this, R.drawable.ic_hydrus))
+//                    .withIconTintingEnabled(true),
                 PrimaryDrawerItem()
                     .withIdentifier(DRAWER_ITEM_ID_MUZEI)
                     .withName(R.string.title_muzei)
@@ -191,12 +213,151 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
         if (!BooruManager.isNotEmpty()) {
             BooruManager.createBooru(
                 Booru(
-                    name = "Sample",
+                    name = "Hydrus",
+                    scheme = "http",
+                    host = "192.168.100.122",
+                    hashSalt = "067fde0b3e566f5dd4a3874621669e33b710286b0b5d7cd201b414b6541347a4",
+                    type = Constants.TYPE_HYDRUS
+                )
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "IdolComplex",
                     scheme = "https",
-                    host = "moe.fiepi.com",
+                    host = "iapi.sankakucomplex.com",
+                    hashSalt = "choujin-steiner--your-password--",
+                    type = Constants.TYPE_IDOL
+                )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "Sankaku",
+                    scheme = "https",
+                    host = "capi-v2.sankakucomplex.com",
+                    hashSalt = "choujin-steiner--your-password--",
+                    type = Constants.TYPE_SANKAKU
+                )
+
+            )
+
+            BooruManager.createBooru(
+                Booru(
+                    name = "safebooru",
+                    scheme = "https",
+                    host = "safebooru.donmai.us",
+                    hashSalt = "",
+                    type = Constants.TYPE_DANBOORU
+                )
+
+            )
+
+            BooruManager.createBooru(
+                Booru(
+                    name = "Danbooru",
+                    scheme = "https",
+                    host = "danbooru.donmai.us",
                     hashSalt = "onlymash--your-password--",
+                    type = Constants.TYPE_DANBOORU
+                )
+            )
+
+            BooruManager.createBooru(
+                Booru(
+                    name = "rule34.xxx",
+                    scheme = "https",
+                    host = "rule34.xxx",
+                    hashSalt = "",
+                    type = Constants.TYPE_GELBOORU
+                )
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "Gelbooru",
+                    scheme = "https",
+                    host = "gelbooru.com",
+                    hashSalt = "",
+                    type = Constants.TYPE_GELBOORU
+                )
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "e926.net",
+                    scheme = "https",
+                    host = "e926.net",
+                    hashSalt = "--your-password--",
+                    type = Constants.TYPE_DANBOORU_ONE
+                )
+            )
+//            BooruManager.createBooru(
+//                Booru(
+//                    name = "lolibooru",
+//                    scheme = "http",
+//                    host = "lolibooru.moe",
+//                    hashSalt = "--your-password--",
+//                    type = Constants.TYPE_MOEBOORU
+//                )
+//            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "3dbooru",
+                    scheme = "http",
+                    host = "behoimi.org",
+                    hashSalt = "meganekko-heaven--your-password--",
+                    type = Constants.TYPE_DANBOORU_ONE
+                )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "hypnohub",
+                    scheme = "https",
+                    host = "hypnohub.net",
+                    hashSalt = "--your-password--",
                     type = Constants.TYPE_MOEBOORU
                 )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "e621.net",
+                    scheme = "https",
+                    host = "e621.net",
+                    hashSalt = "--your-password--",
+                    type = Constants.TYPE_DANBOORU_ONE
+                )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "yande.re",
+                    scheme = "https",
+                    host = "yande.re",
+                    hashSalt = "choujin-steiner--your-password--",
+                    type = Constants.TYPE_MOEBOORU
+                )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "Konachan",
+                    scheme = "https",
+                    host = "konachan.com",
+                    hashSalt = "So-I-Heard-You-Like-Mupkids-?--your-password--",
+                    type = Constants.TYPE_MOEBOORU
+                )
+
+            )
+
+            BooruManager.createBooru(
+                Booru(
+                    name = "Sakugabooru",
+                    scheme = "https",
+                    host = "www.sakugabooru.com",
+                    hashSalt = "er@!\$rjiajd0\$!dkaopc350!Y%)--your-password--",
+                    type = Constants.TYPE_MOEBOORU
+                )
+
             )
         }
         boorus = BooruManager.getAllBoorus() ?: mutableListOf()
@@ -205,7 +366,7 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
         BooruManager.listeners.add(booruListener)
         initDrawerHeader()
         setExitSharedElementCallback(sharedElementCallback)
-        checkUpdate()
+//        checkUpdate()
     }
 
     private fun checkUpdate() {
@@ -418,6 +579,10 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                     } else {
                         startActivity(Intent(this@MainActivity, BooruActivity::class.java))
                     }
+                }
+//               /*hydrus drawer activity setup*/
+                DRAWER_ITEM_ID_HYDRUS -> {
+                    startActivity(Intent(this@MainActivity, MuzeiActivity::class.java))
                 }
                 DRAWER_ITEM_ID_MUZEI -> {
                     if (getCurrentBooru() != null) {

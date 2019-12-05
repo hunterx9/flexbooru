@@ -28,10 +28,12 @@ import onlymash.flexbooru.entity.common.*
 import onlymash.flexbooru.entity.post.*
 
 @Database(entities = [
-    (PostMoe::class), (PostDan::class), (PostDanOne::class), (PostGel::class), (PostSankaku::class),
+    (PostHydrusFileResponse::class), (PostMoe::class), (PostDan::class), (PostDanOne::class),
+    (PostGel::class), (PostSankaku::class), (PostIdol::class),
     (Booru::class), (User::class), (Suggestion::class), (Cookie::class),
     (TagFilter::class), (Muzei::class), (TagBlacklist::class)],
-    version = 23, exportSchema = true)
+    version = 27, exportSchema = true
+)
 @TypeConverters(Converters::class)
 abstract class FlexbooruDatabase : RoomDatabase() {
 
@@ -84,6 +86,7 @@ abstract class FlexbooruDatabase : RoomDatabase() {
                     database.execSQL("DROP TABLE `tags_danbooru`")
 
                     database.execSQL("DELETE FROM `posts_danbooru`")
+                    database.execSQL("DELETE FROM `posts_hydrus_file`")
                     database.execSQL("DELETE FROM `posts_danbooru_one`")
                     database.execSQL("DELETE FROM `posts_moebooru`")
                     database.execSQL("ALTER TABLE `posts_danbooru` ADD COLUMN `scheme` TEXT NOT NULL DEFAULT('http')")
@@ -158,6 +161,26 @@ abstract class FlexbooruDatabase : RoomDatabase() {
                 }
             }
         }
+        private val MIGRATION_24_25 by lazy {
+            object : Migration(24, 25) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    database.execSQL("CREATE TABLE IF NOT EXISTS `posts_hydrus_file` (`id` INTEGER NOT NULL, `height` INTEGER NOT NULL, `score` INTEGER NOT NULL, `file_url` TEXT NOT NULL, `parent_id` TEXT NOT NULL, `sample_url` TEXT NOT NULL, `sample_width` INTEGER NOT NULL, `sample_height` INTEGER NOT NULL, `preview_url` TEXT NOT NULL, `rating` TEXT NOT NULL, `tags` TEXT NOT NULL, `width` INTEGER NOT NULL, `change` INTEGER NOT NULL, `md5` TEXT NOT NULL, `creator_id` INTEGER NOT NULL, `has_children` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `status` TEXT NOT NULL, `source` TEXT NOT NULL, `has_notes` INTEGER NOT NULL, `has_comments` INTEGER NOT NULL, `preview_width` INTEGER NOT NULL, `preview_height` INTEGER NOT NULL, `uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `indexInResponse` INTEGER NOT NULL, `scheme` TEXT NOT NULL, `host` TEXT NOT NULL, `keyword` TEXT NOT NULL)")
+                    database.execSQL("CREATE UNIQUE INDEX `index_posts_hydrus_file` ON `posts_hydrus_file` (`host`, `keyword`, `id`)")
+                }
+            }
+        }
+
+        private val MIGRATION_26_27 by lazy {
+            object : Migration(26, 27) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    database.execSQL(
+                        "CREATE TABLE IF NOT EXISTS `posts_idol` (`author` TEXT NOT NULL, `change` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `fav_count` INTEGER NOT NULL, `file_size` INTEGER NOT NULL, `file_type` TEXT, `file_url` TEXT NOT NULL, `has_children` INTEGER NOT NULL, `has_comments` INTEGER NOT NULL, `has_notes` INTEGER NOT NULL, `height` INTEGER NOT NULL, `id` INTEGER NOT NULL, `in_visible_pool` INTEGER NOT NULL, `is_favorited` INTEGER NOT NULL, `is_premium` INTEGER NOT NULL, `md5` TEXT NOT NULL, `parent_id` INTEGER, `preview_height` INTEGER NOT NULL, `preview_url` TEXT NOT NULL, `preview_width` INTEGER NOT NULL, `rating` TEXT, `recommended_posts` INTEGER NOT NULL, `recommended_score` INTEGER NOT NULL, `sample_height` INTEGER NOT NULL, `sample_url` TEXT NOT NULL, `sample_width` INTEGER NOT NULL, `source` TEXT, `status` TEXT NOT NULL, `tags` TEXT NOT NULL, `total_score` INTEGER NOT NULL, `vote_count` INTEGER NOT NULL, `width` INTEGER NOT NULL, `uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `indexInResponse` INTEGER NOT NULL, `scheme` TEXT NOT NULL, `host` TEXT NOT NULL, `keyword` TEXT NOT NULL)"
+                    )
+                    database.execSQL("CREATE UNIQUE INDEX `index_posts_idol_host_keyword_id` ON `posts_idol` (`host`, `keyword`, `id`)")
+                }
+            }
+        }
+
         @Volatile
         private var instance: FlexbooruDatabase? = null
         private val LOCK = Any()
@@ -181,7 +204,9 @@ abstract class FlexbooruDatabase : RoomDatabase() {
                     MIGRATION_19_20,
                     MIGRATION_20_21,
                     MIGRATION_21_22,
-                    MIGRATION_22_23
+                    MIGRATION_22_23,
+                    MIGRATION_24_25,
+                    MIGRATION_26_27
                 )
                 .build()
     }
@@ -191,6 +216,8 @@ abstract class FlexbooruDatabase : RoomDatabase() {
     abstract fun postMoeDao(): PostMoeDao
     abstract fun postGelDao(): PostGelDao
     abstract fun postSankakuDao(): PostSankakuDao
+    abstract fun postIdolDao(): PostIdolDao
+    abstract fun postHydrusDao(): PostHydrusDao
 
     abstract fun booruDao(): BooruDao
     abstract fun userDao(): UserDao

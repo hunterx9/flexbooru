@@ -21,13 +21,12 @@ import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-
 import kotlinx.android.synthetic.main.activity_account_config.*
-import kotlinx.coroutines.*
-import onlymash.flexbooru.common.Constants
+import kotlinx.coroutines.launch
 import onlymash.flexbooru.R
-import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.api.*
+import onlymash.flexbooru.common.Constants
+import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.database.BooruManager
 import onlymash.flexbooru.database.UserManager
 import onlymash.flexbooru.entity.common.Booru
@@ -35,8 +34,8 @@ import onlymash.flexbooru.entity.common.User
 import onlymash.flexbooru.extension.NetResult
 import onlymash.flexbooru.extension.launchUrl
 import onlymash.flexbooru.extension.sha1
-import onlymash.flexbooru.repository.account.UserRepositoryImpl
 import onlymash.flexbooru.repository.account.UserRepository
+import onlymash.flexbooru.repository.account.UserRepositoryImpl
 import org.kodein.di.erased.instance
 
 class AccountConfigActivity : BaseActivity() {
@@ -49,6 +48,7 @@ class AccountConfigActivity : BaseActivity() {
     private val danOneApi: DanbooruOneApi by instance()
     private val moeApi: MoebooruApi by instance()
     private val sankakuApi: SankakuApi by instance()
+    private val hydrusApi: HydrusApi by instance()
 
     private lateinit var booru: Booru
     private var username = ""
@@ -60,7 +60,8 @@ class AccountConfigActivity : BaseActivity() {
             danbooruApi = danApi,
             danbooruOneApi = danOneApi,
             moebooruApi = moeApi,
-            sankakuApi = sankakuApi
+            sankakuApi = sankakuApi,
+            hydrusApi = hydrusApi
         )
     }
 
@@ -76,6 +77,10 @@ class AccountConfigActivity : BaseActivity() {
         booru = b
         account_config_title.text = String.format(getString(R.string.title_account_config_and_booru), booru.name)
         if (booru.type == Constants.TYPE_DANBOORU) {
+            password_edit_container.hint = getString(R.string.account_access_key)
+            forgot_auth.setText(R.string.account_forgot_api_key)
+        }
+        if (booru.type == Constants.TYPE_HYDRUS) {
             password_edit_container.hint = getString(R.string.account_api_key)
             forgot_auth.setText(R.string.account_forgot_api_key)
         }
@@ -144,6 +149,13 @@ class AccountConfigActivity : BaseActivity() {
                     Constants.TYPE_MOEBOORU,
                     Constants.TYPE_DANBOORU_ONE,
                     Constants.TYPE_SANKAKU -> {
+                        user.apply {
+                            booruUid = booru.uid
+                            passwordHash = pass
+                        }
+                        UserManager.createUser(user)
+                    }
+                    Constants.TYPE_HYDRUS -> {
                         user.apply {
                             booruUid = booru.uid
                             passwordHash = pass

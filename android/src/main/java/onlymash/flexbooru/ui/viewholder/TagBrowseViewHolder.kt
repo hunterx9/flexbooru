@@ -23,8 +23,8 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.R
+import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.database.TagFilterManager
 import onlymash.flexbooru.entity.common.TagFilter
@@ -114,6 +114,64 @@ class TagBrowseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                     TagViewHolder.MEDIUM -> dot.setColorFilter(ContextCompat.getColor(itemView.context, R.color.tag_type_medium))
                     TagViewHolder.STUDIO -> dot.setColorFilter(ContextCompat.getColor(itemView.context,  R.color.tag_type_studio))
                     else -> dot.setColorFilter(ContextCompat.getColor(itemView.context,  R.color.tag_type_unknown))
+                }
+            }
+            Constants.TYPE_IDOL -> {
+                when (type) {
+                    TagViewHolder.GENERAL -> dot.setColorFilter(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tag_type_general
+                        )
+                    )
+                    TagViewHolder.ARTIST -> dot.setColorFilter(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tag_type_artist
+                        )
+                    )
+                    TagViewHolder.COPYRIGHT -> dot.setColorFilter(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tag_type_copyright
+                        )
+                    )
+                    TagViewHolder.CHARACTER -> dot.setColorFilter(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tag_type_character
+                        )
+                    )
+                    TagViewHolder.META_SANKAKU -> dot.setColorFilter(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tag_type_meta
+                        )
+                    )
+                    TagViewHolder.GENRE -> dot.setColorFilter(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tag_type_genre
+                        )
+                    )
+                    TagViewHolder.MEDIUM -> dot.setColorFilter(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tag_type_medium
+                        )
+                    )
+                    TagViewHolder.STUDIO -> dot.setColorFilter(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tag_type_studio
+                        )
+                    )
+                    else -> dot.setColorFilter(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tag_type_unknown
+                        )
+                    )
                 }
             }
             else -> {

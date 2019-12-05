@@ -19,34 +19,17 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'io.fabric'
 
-Properties properties = new Properties()
-properties.load(project.rootProject.file('.gradle/keystore.properties').newDataInputStream())
-Integer verCode = 'git rev-list HEAD --first-parent --count'.execute().text.trim().toInteger()
-
 android {
-    signingConfigs {
-        github {
-            storeFile file('../.gradle/flexbooru.jks')
-            keyAlias properties.getProperty('KEY_ALIAS')
-            keyPassword properties.getProperty('KEY_PASS')
-            storePassword properties.getProperty('STORE_PASS')
-        }
-        play {
-            storeFile file('../.gradle/flexbooru_play.jks')
-            keyAlias properties.getProperty('KEY_ALIAS')
-            keyPassword properties.getProperty('KEY_PASS')
-            storePassword properties.getProperty('STORE_PASS')
-        }
-    }
+
     compileSdkVersion 29
     buildToolsVersion '29.0.2'
     defaultConfig {
         applicationId "onlymash.flexbooru.play"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode verCode
+
         versionName '1.1.10'
-        versionNameSuffix '.c' + verCode
+
         multiDexEnabled true
         resConfigs 'en', 'zh-rCN', 'zh-rHK', 'zh-rTW', 'nl-rNL', 'pt-rBR', 'es-rES', 'pl-rPL', 'fr-rFR', 'hu-rHU', 'ru-rRU', 'ja-rJP', 'in-rID', 'de-rDE'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -54,16 +37,11 @@ android {
     }
     applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "flexbooru_${defaultConfig.versionName}${defaultConfig.versionNameSuffix}.apk"
+            outputFileName = "flexbooru_.apk"
         }
     }
     buildTypes {
-        release {
-            shrinkResources true
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.play
-        }
+       
         debug {
             applicationIdSuffix '.debug'
         }
@@ -160,6 +138,8 @@ dependencies {
     androidTestImplementation "androidx.work:work-testing:$work_version"
     androidTestImplementation 'androidx.test:runner:1.3.0-alpha02'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0-alpha02'
+    implementation("io.coil-kt:coil:0.8.0")
+    implementation 'com.koushikdutta.ion:ion:2.2.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

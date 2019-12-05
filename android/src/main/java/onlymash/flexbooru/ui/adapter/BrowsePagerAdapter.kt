@@ -16,7 +16,9 @@
 package onlymash.flexbooru.ui.adapter
 
 import android.annotation.SuppressLint
-import android.graphics.*
+import android.content.Context
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.drawable.Drawable
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -25,30 +27,32 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.gif.GifDrawable
-import com.bumptech.glide.request.RequestListener
+import coil.api.load
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions.diskCacheStrategyOf
 import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.github.chrisbanes.photoview.PhotoView
 import com.google.android.exoplayer2.ui.PlayerView
+import com.koushikdutta.ion.Ion
 import com.squareup.picasso.Picasso
-import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.R
+import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.common.Settings
-import onlymash.flexbooru.entity.post.PostBase
-import onlymash.flexbooru.glide.GlideRequests
 import onlymash.flexbooru.decoder.CustomDecoder
 import onlymash.flexbooru.decoder.CustomRegionDecoder
+import onlymash.flexbooru.entity.post.PostBase
 import onlymash.flexbooru.extension.isGifImage
+import onlymash.flexbooru.extension.isHydrus
+import onlymash.flexbooru.extension.isIdol
 import onlymash.flexbooru.extension.isStillImage
+import onlymash.flexbooru.glide.GlideRequests
 import onlymash.flexbooru.widget.DismissFrameLayout
 import java.io.File
 import java.util.concurrent.Executor
@@ -57,7 +61,9 @@ class BrowsePagerAdapter(private val glideRequests: GlideRequests,
                          private val picasso: Picasso,
                          private val onDismissListener: DismissFrameLayout.OnDismissListener,
                          private val pageType: Int,
-                         private val ioExecutor: Executor): PagerAdapter() {
+                         private val ioExecutor: Executor,
+                         private val context: Context
+) : PagerAdapter() {
 
     private val size = Settings.browseSize
     private var posts: MutableList<PostBase> = mutableListOf()
@@ -72,6 +78,7 @@ class BrowsePagerAdapter(private val glideRequests: GlideRequests,
     }
 
     override fun getCount(): Int = posts.size
+
 
     @SuppressLint("InflateParams")
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
@@ -94,7 +101,7 @@ class BrowsePagerAdapter(private val glideRequests: GlideRequests,
         }
         if (url.isNotEmpty()) {
             when {
-                url.isStillImage() -> {
+                url.isHydrus() -> {
                     val stillView = SubsamplingScaleImageView(container.context).apply {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -146,7 +153,8 @@ class BrowsePagerAdapter(private val glideRequests: GlideRequests,
                             }
                         })
                 }
-                url.isGifImage() -> {
+
+                url.isIdol() && url.isStillImage() -> {
                     val gifView = PhotoView(container.context).apply {
                         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                         scaleType = ImageView.ScaleType.FIT_CENTER
@@ -164,6 +172,55 @@ class BrowsePagerAdapter(private val glideRequests: GlideRequests,
                             0f, 0f, 0f, 1f, 0f  // A
                         ))
                     }
+
+                    layout.apply {
+                        removeAllViewsInLayout()
+                        addView(gifView, 0)
+                    }
+
+
+
+                    gifView.load(url)
+//                    glideRequests.load(post.getLargerSize())
+//                        .into(object : CustomTarget<Drawable>() {
+//                            override fun onLoadCleared(placeholder: Drawable?) {}
+//                            override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+//                                glideRequests
+//                                    .asGif()
+//                                    .load(post.getLargerSize())
+//                                    .disallowHardwareConfig()
+//                                    .placeholder(resource)
+//                                    .into(gifView)
+//                            }
+//                        })
+                }
+
+
+                url.isStillImage() && !url.isIdol() -> {
+                    val stillView = SubsamplingScaleImageView(container.context).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        transitionName = tranName
+                        setOnClickListener {
+                            photoViewListener?.onClickPhotoView()
+                        }
+                        setExecutor(ioExecutor)
+                        setBitmapDecoderFactory { CustomDecoder(picasso) }
+                        setRegionDecoderFactory { CustomRegionDecoder() }
+                    }
+                    val colorMatrix = ColorMatrix().apply {
+                        setSaturation(0f)
+                        set(
+                            floatArrayOf(
+                                1f, 0f, 0f, 0f, 0f, // R
+                                0f, 1f, 0f, 0f, 0f, // G
+                                0f, 0f, 1f, 0f, 0f, // B
+                                0f, 0f, 0f, 1f, 0f  // A
+                            )
+                        )
+                    }
                     val progressBar = ProgressBar(container.context).apply {
                         layoutParams = FrameLayout.LayoutParams(
                             FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -173,48 +230,166 @@ class BrowsePagerAdapter(private val glideRequests: GlideRequests,
                     }
                     layout.apply {
                         removeAllViewsInLayout()
-                        addView(gifView, 0)
+                        addView(stillView, 0)
                         addView(progressBar, 1)
                     }
-                    glideRequests.load(previewUrl)
-                        .into(object : CustomTarget<Drawable>() {
-                            override fun onLoadCleared(placeholder: Drawable?) {}
-                            override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                                glideRequests
-                                    .asGif()
-                                    .load(url)
-                                    .placeholder(resource)
-                                    .addListener(object : RequestListener<GifDrawable> {
-                                        override fun onLoadFailed(
-                                            e: GlideException?,
-                                            model: Any?,
-                                            target: Target<GifDrawable>?,
-                                            isFirstResource: Boolean
-                                        ): Boolean {
-                                            layout.removeView(progressBar)
-                                            return false
-                                        }
+                    stillView.setOnImageEventListener(object :
+                        SubsamplingScaleImageView.OnImageEventListener {
+                        override fun onImageLoaded() {
+                            layout.removeView(progressBar)
+                        }
 
-                                        override fun onResourceReady(
-                                            resource: GifDrawable?,
-                                            model: Any?,
-                                            target: Target<GifDrawable>?,
-                                            dataSource: DataSource?,
-                                            isFirstResource: Boolean
-                                        ): Boolean {
-                                            layout.removeView(progressBar)
-                                            return false
-                                        }
-                                    })
-                                    .into(gifView)
+                        override fun onReady() {}
+                        override fun onTileLoadError(e: Exception?) {}
+                        override fun onPreviewReleased() {}
+                        override fun onImageLoadError(e: Exception?) {}
+                        override fun onPreviewLoadError(e: Exception?) {}
+                    })
+                    glideRequests.downloadOnly().load(url)
+                        .override(2000, 3000)
+                        .into(object : CustomTarget<File>() {
+                            override fun onLoadCleared(placeholder: Drawable?) {}
+                            override fun onResourceReady(
+                                resource: File,
+                                transition: Transition<in File>?
+                            ) {
+                                stillView.setImage(ImageSource.uri(resource.toUri()))
                             }
                         })
                 }
+                url.isGifImage() -> {
+                    val gifView = PhotoView(container.context).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+                        transitionName = tranName
+                        setOnViewTapListener { _, _, _ ->
+                            photoViewListener?.onClickPhotoView()
+                        }
+                    }
+                    val colorMatrix = ColorMatrix().apply {
+                        setSaturation(0f)
+                        set(
+                            floatArrayOf(
+                                1f, 0f, 0f, 0f, 0f, // R
+                                0f, 1f, 0f, 0f, 0f, // G
+                                0f, 0f, 1f, 0f, 0f, // B
+                                0f, 0f, 0f, 1f, 0f  // A
+                            )
+                        )
+                    }
+                    var playbtnImage = ImageView(context)
+                    val params = FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        Gravity.CENTER
+                    )
+
+                    playbtnImage.layoutParams = params
+                    playbtnImage.setImageDrawable(context.getDrawable(R.drawable.exo_controls_play))
+
+                    layout.apply {
+                        removeAllViewsInLayout()
+                        addView(gifView, 0)
+                        addView(playbtnImage, 1)
+                    }
+                    var isClicked = false
+                    gifView.setOnClickListener {
+                        if (!isClicked) {
+                            Toast.makeText(context, "Loading gif", Toast.LENGTH_SHORT).show()
+                            glideRequests.load(previewUrl)
+                                .into(object : CustomTarget<Drawable>() {
+                                    override fun onLoadCleared(placeholder: Drawable?) {}
+                                    override fun onResourceReady(
+                                        resource: Drawable,
+                                        transition: Transition<in Drawable>?
+                                    ) {
+                                        layout.removeView(playbtnImage)
+                                        Ion.with(gifView)
+                                            .placeholder(resource)
+                                            .apply { diskCacheStrategyOf(DiskCacheStrategy.AUTOMATIC) }
+                                            .error(R.drawable.avatar_account)
+                                            .load(url)
+
+//                                glideRequests
+//                                    .asGif()
+//                                    .load(url)
+//                                    .placeholder(resource)
+//                                    .apply(diskCacheStrategyOf(DiskCacheStrategy.NONE))
+//                                    .addListener(object : RequestListener<GifDrawable> {
+//                                        override fun onLoadFailed(
+//                                            e: GlideException?,
+//                                            model: Any?,
+//                                            target: Target<GifDrawable>?,
+//                                            isFirstResource: Boolean
+//                                        ): Boolean {
+//                                            Logger.e("GIF error","error loading:"+e.toString())
+//                                            layout.removeView(progressBar)
+//                                            return false
+//                                        }
+//
+//                                        override fun onResourceReady(
+//                                            resource: GifDrawable?,
+//                                            model: Any?,
+//                                            target: Target<GifDrawable>?,
+//                                            dataSource: DataSource?,
+//                                            isFirstResource: Boolean
+//                                        ): Boolean {
+//                                            layout.removeView(progressBar)
+//                                            return false
+//                                        }
+//                                    })
+//                                    .into(gifView)
+                                    }
+                                })
+                        }
+
+                        isClicked = true
+
+                    }
+                    glideRequests.load(previewUrl)
+                        .into(gifView)
+                }
                 else -> {
+                    var vidImagePreview = ImageView(context)
+                    val params = FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        Gravity.CENTER
+                    )
+
+                    vidImagePreview.layoutParams = params
+                    glideRequests.load(previewUrl)
+                        .into(vidImagePreview)
+                    var playbtnImage = ImageView(context)
+                    val params1 = FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        Gravity.CENTER
+                    )
+                    playbtnImage.layoutParams = params1
+                    playbtnImage.setImageDrawable(context.getDrawable(R.drawable.exo_controls_play))
+
                     val playerView = LayoutInflater.from(container.context).inflate(R.layout.exoplayer, null) as PlayerView
                     playerView.tag = String.format("player_%d", position)
                     playerView.transitionName = tranName
-                    layout.addView(playerView)
+                    layout.apply {
+                        layout.addView(playerView, 0)
+                        layout.addView(vidImagePreview, 1)
+                        layout.addView(playbtnImage, 2)
+                    }
+                    var isvidImageClicked = false
+                    vidImagePreview.setOnClickListener {
+                        if (!isvidImageClicked) {
+                            layout.removeView(vidImagePreview)
+                            layout.removeView(playbtnImage)
+
+                        }
+                        isvidImageClicked = true
+                    }
+//                    layout.addView(playerView)
                 }
             }
         }
@@ -223,8 +398,10 @@ class BrowsePagerAdapter(private val glideRequests: GlideRequests,
     }
 
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
+
         container.removeView(`object` as View)
     }
+
 
     private var photoViewListener: PhotoViewListener? = null
 
