@@ -22,8 +22,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.R
+import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.entity.common.TagFilter
 import onlymash.flexbooru.entity.post.*
@@ -78,9 +78,28 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
                             putString(TAG_ALL_KEY, post.tags)
                         }
                     }
+                    is PostHydrusFileResponse -> {
+                        Bundle().apply {
+                            putInt(POST_TYPE, Constants.TYPE_GELBOORU)
+                            putString(TAG_ALL_KEY, post.tags)
+                        }
+                    }
                     is PostSankaku -> {
                         Bundle().apply {
                             putInt(POST_TYPE, Constants.TYPE_SANKAKU)
+                            putString(TAG_GENERAL_KEY, post.getTagString(0))
+                            putString(TAG_ARTIST_KEY, post.getTagString(1))
+                            putString(TAG_STUDIO_KEY, post.getTagString(2))
+                            putString(TAG_COPYRIGHT_KEY, post.getTagString(3))
+                            putString(TAG_CHARACTER_KEY, post.getTagString(4))
+                            putString(TAG_GENRE_KEY, post.getTagString(5))
+                            putString(TAG_MEDIUM_KEY, post.getTagString(8))
+                            putString(TAG_META_KEY, post.getTagString(9))
+                        }
+                    }
+                    is PostIdol -> {
+                        Bundle().apply {
+                            putInt(POST_TYPE, Constants.TYPE_IDOL)
                             putString(TAG_GENERAL_KEY, post.getTagString(0))
                             putString(TAG_ARTIST_KEY, post.getTagString(1))
                             putString(TAG_STUDIO_KEY, post.getTagString(2))
@@ -96,6 +115,16 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
             }
         }
         private fun PostSankaku.getTagString(type: Int): String {
+            var tag = ""
+            tags.forEach {
+                if (it.type == type) {
+                    tag = "$tag ${it.name}"
+                }
+            }
+            return tag.trim()
+        }
+
+        private fun PostIdol.getTagString(type: Int): String {
             var tag = ""
             tags.forEach {
                 if (it.type == type) {
@@ -198,7 +227,109 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
                     )
                 }
             }
+            Constants.TYPE_HYDRUS -> {
+                arg.getString(TAG_ALL_KEY)?.trim()?.split(" ")?.forEach { tag ->
+                    if (tag.isNotEmpty()) tags.add(
+                        TagFilter(
+                            booruUid = booruUid,
+                            name = tag
+                        )
+                    )
+                }
+            }
             Constants.TYPE_SANKAKU -> {
+                arg.apply {
+                    getString(TAG_ARTIST_KEY)?.trim()?.split(" ")?.forEach { tag ->
+                        if (tag.isNotEmpty()) {
+                            tags.add(
+                                TagFilter(
+                                    booruUid = booruUid,
+                                    name = tag,
+                                    type = TagViewHolder.ARTIST
+                                )
+                            )
+                        }
+                    }
+                    getString(TAG_COPYRIGHT_KEY)?.trim()?.split(" ")?.forEach { tag ->
+                        if (tag.isNotEmpty()) {
+                            tags.add(
+                                TagFilter(
+                                    booruUid = booruUid,
+                                    name = tag,
+                                    type = TagViewHolder.COPYRIGHT
+                                )
+                            )
+                        }
+                    }
+                    getString(TAG_CHARACTER_KEY)?.trim()?.split(" ")?.forEach { tag ->
+                        if (tag.isNotEmpty()) {
+                            tags.add(
+                                TagFilter(
+                                    booruUid = booruUid,
+                                    name = tag,
+                                    type = TagViewHolder.CHARACTER
+                                )
+                            )
+                        }
+                    }
+                    getString(TAG_META_KEY)?.trim()?.split(" ")?.forEach { tag ->
+                        if (tag.isNotEmpty()) {
+                            tags.add(
+                                TagFilter(
+                                    booruUid = booruUid,
+                                    name = tag,
+                                    type = TagViewHolder.META_SANKAKU
+                                )
+                            )
+                        }
+                    }
+                    getString(TAG_GENRE_KEY)?.trim()?.split(" ")?.forEach { tag ->
+                        if (tag.isNotEmpty()) {
+                            tags.add(
+                                TagFilter(
+                                    booruUid = booruUid,
+                                    name = tag,
+                                    type = TagViewHolder.GENRE
+                                )
+                            )
+                        }
+                    }
+                    getString(TAG_MEDIUM_KEY)?.trim()?.split(" ")?.forEach { tag ->
+                        if (tag.isNotEmpty()) {
+                            tags.add(
+                                TagFilter(
+                                    booruUid = booruUid,
+                                    name = tag,
+                                    type = TagViewHolder.MEDIUM
+                                )
+                            )
+                        }
+                    }
+                    getString(TAG_STUDIO_KEY)?.trim()?.split(" ")?.forEach { tag ->
+                        if (tag.isNotEmpty()) {
+                            tags.add(
+                                TagFilter(
+                                    booruUid = booruUid,
+                                    name = tag,
+                                    type = TagViewHolder.STUDIO
+                                )
+                            )
+                        }
+                    }
+                    getString(TAG_GENERAL_KEY)?.trim()?.split(" ")?.forEach { tag ->
+                        if (tag.isNotEmpty()) {
+                            tags.add(
+                                TagFilter(
+                                    booruUid = booruUid,
+                                    name = tag,
+                                    type = TagViewHolder.GENERAL
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+            Constants.TYPE_IDOL -> {
                 arg.apply {
                     getString(TAG_ARTIST_KEY)?.trim()?.split(" ")?.forEach { tag ->
                         if (tag.isNotEmpty()) {

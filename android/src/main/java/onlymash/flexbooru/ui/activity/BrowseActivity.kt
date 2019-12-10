@@ -33,27 +33,31 @@ import androidx.core.app.SharedElementCallback
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.*
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_browse.*
 import kotlinx.android.synthetic.main.bottom_shortcut_bar.*
 import kotlinx.android.synthetic.main.toolbar_transparent.*
-import kotlinx.coroutines.*
-import onlymash.flexbooru.common.Constants
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import onlymash.flexbooru.R
-import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.api.*
+import onlymash.flexbooru.common.Constants
+import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.database.BooruManager
 import onlymash.flexbooru.database.FlexbooruDatabase
 import onlymash.flexbooru.database.UserManager
+import onlymash.flexbooru.entity.Vote
 import onlymash.flexbooru.entity.common.Booru
 import onlymash.flexbooru.entity.common.User
-import onlymash.flexbooru.entity.Vote
 import onlymash.flexbooru.entity.post.*
 import onlymash.flexbooru.exoplayer.PlayerHolder
 import onlymash.flexbooru.extension.*
@@ -71,6 +75,7 @@ import onlymash.flexbooru.worker.DownloadWorker
 import org.kodein.di.erased.instance
 import java.io.*
 import java.util.concurrent.Executor
+import kotlin.collections.set
 
 class BrowseActivity : BaseActivity() {
 
@@ -109,10 +114,13 @@ class BrowseActivity : BaseActivity() {
         }
     }
 
+    private var pagePostion: Int = 0
     private val danApi: DanbooruApi by instance()
     private val danOneApi: DanbooruOneApi by instance()
     private val moeApi: MoebooruApi by instance()
     private val sankakuApi: SankakuApi by instance()
+    private val idolApi: IdolApi by instance()
+    private val hydrusApi: HydrusApi by instance()
     private val gelApi: GelbooruApi by instance()
     private val db: FlexbooruDatabase by instance()
     private val ioExecutor: Executor by instance()
@@ -150,18 +158,22 @@ class BrowseActivity : BaseActivity() {
         toolbar.title = String.format(getString(R.string.browse_toolbar_title_and_id), posts[position].getPostId())
         pagerAdapter.updateData(posts)
         pager_browse.adapter = pagerAdapter
+        pager_browse.offscreenPageLimit = 3
         pager_browse.setCurrentItem(if (currentPosition >= 0) currentPosition else position, false)
         if (canTransition) startPostponedEnterTransition()
         if (url.isNotEmpty() && !url.isImage()) {
-            Handler().postDelayed({
-                val playerView: Any? = pager_browse.findViewWithTag(String.format("player_%d", position))
-                if (playerView is PlayerView) {
-                    currentPlayerView = playerView
-                    val uri = Uri.parse(url)
-                    currentVideoUri = uri
-                    playerHolder.start(uri = uri, playerView = playerView)
-                }
-            }, 300)
+            if (booru.type != Constants.TYPE_HYDRUS) {
+                Handler().postDelayed({
+                    val playerView: Any? =
+                        pager_browse.findViewWithTag(String.format("player_%d", position))
+                    if (playerView is PlayerView) {
+                        currentPlayerView = playerView
+                        val uri = Uri.parse(url)
+                        currentVideoUri = uri
+                        playerHolder.start(uri = uri, playerView = playerView)
+                    }
+                }, 300)
+            }
         }
     }
 
@@ -178,7 +190,7 @@ class BrowseActivity : BaseActivity() {
         }
 
         override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-
+            pagePostion = position
         }
 
         override fun onPageSelected(position: Int) {
@@ -206,6 +218,7 @@ class BrowseActivity : BaseActivity() {
                     val uri = Uri.parse(url)
                     currentVideoUri = uri
                     playerHolder.start(uri = uri, playerView = playerView)
+
                 }
             } else {
                 currentPlayerView = null
@@ -292,6 +305,7 @@ class BrowseActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
@@ -362,9 +376,13 @@ class BrowseActivity : BaseActivity() {
             picasso = Picasso.Builder(this).build(),
             onDismissListener = onDismissListener,
             pageType = pageType,
-            ioExecutor = ioExecutor)
+            ioExecutor = ioExecutor,
+            context = this
+        )
         pagerAdapter.setPhotoViewListener(photoViewListener)
         pager_browse.addOnPageChangeListener(pagerChangeListener)
+
+
         lifecycleScope.launch {
             val data = withContext(Dispatchers.IO) {
                 postLoader.loadPosts(
@@ -376,6 +394,18 @@ class BrowseActivity : BaseActivity() {
             handleResult(data)
         }
         initBottomBar()
+        initSliderBar()
+    }
+
+    private fun initSliderBar() {
+        prevBtn.setOnClickListener {
+            if (pagePostion != 0)
+                pager_browse.setCurrentItem(pagePostion - 1)
+        }
+        nextBtn.setOnClickListener {
+            if (pagePostion < posts?.size!!)
+                pager_browse.setCurrentItem(pagePostion + 1)
+        }
     }
 
     private fun startAccountConfigAndFinish() {
@@ -527,12 +557,12 @@ class BrowseActivity : BaseActivity() {
             val adBuilder = AdRequest.Builder().addTestDevice("C82BDF14EB83BBBF0A82F44262DD9330")
             val adView = AdView(this)
             bottom_bar_container.addView(adView, 1, ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            adView.apply {
-                visibility = View.VISIBLE
-                adSize = AdSize.SMART_BANNER
-                adUnitId = "ca-app-pub-1547571472841615/1729907816"
-                loadAd(adBuilder.build())
-            }
+//            adView.apply {
+//                visibility = View.VISIBLE
+//                adSize = AdSize.SMART_BANNER
+//                adUnitId = "ca-app-pub-1547571472841615/1729907816"
+//                loadAd(adBuilder.build())
+//            }
         }
     }
 
@@ -609,19 +639,36 @@ class BrowseActivity : BaseActivity() {
     }
 
     private suspend fun copyFile(file: File, desUri: Uri): Boolean = withContext(Dispatchers.IO) {
-        var `is`: InputStream? = null
-        var os: OutputStream? = null
-        try {
-            `is` = FileInputStream(file)
-            os = contentResolver.openOutputStream(desUri)
-            `is`.copyTo(os)
-            return@withContext true
-        } catch (_: IOException) {
-            return@withContext false
-        } finally {
-            `is`?.safeCloseQuietly()
-            os?.safeCloseQuietly()
+        val post = getCurrentPost()
+        when (post) {
+            is PostIdol -> {
+//                Ion.with(applicationContext)
+//                    .load(file)
+//                    .write(File(desUri.toString()))
+//
+
+
+                return@withContext false
+            }
+            else -> {
+                var `is`: InputStream? = null
+                var os: OutputStream? = null
+                try {
+                    `is` = FileInputStream(file)
+                    os = contentResolver.openOutputStream(desUri)
+                    `is`.copyTo(os)
+                    return@withContext true
+                } catch (_: IOException) {
+                    return@withContext false
+                } finally {
+                    `is`?.safeCloseQuietly()
+                    os?.safeCloseQuietly()
+                }
+            }
         }
+
+
+
     }
 
     private fun saveAndAction(action: Int) {
@@ -635,7 +682,9 @@ class BrowseActivity : BaseActivity() {
         lifecycleScope.launch {
             val file = getFile(url)
             if (file != null) {
-                val fileName = url.fileName()
+                var fileName = url.fileName()
+                if (url.isHydrus())
+                    fileName = "${getCurrentPostId()}.jpg"
                 when (action) {
                     ACTION_SAVE -> {
                         val uri = getSaveUri(fileName) ?: return@launch
@@ -643,6 +692,12 @@ class BrowseActivity : BaseActivity() {
                             Toast.makeText(this@BrowseActivity,
                                 getString(R.string.msg_file_save_success, DocumentsContract.getDocumentId(uri)),
                                 Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(
+                                this@BrowseActivity,
+                                "Not supported at the moment",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                     ACTION_SET_AS -> {

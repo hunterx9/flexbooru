@@ -31,12 +31,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.refreshable_list.*
 import onlymash.flexbooru.R
-import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.api.*
+import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.entity.tag.SearchTag
-import onlymash.flexbooru.extension.toVisibility
-import onlymash.flexbooru.repository.NetworkState
-import onlymash.flexbooru.repository.Status
 import onlymash.flexbooru.repository.suggestion.SuggestionRepository
 import onlymash.flexbooru.repository.suggestion.SuggestionRepositoryImpl
 import onlymash.flexbooru.ui.activity.MainActivity
@@ -57,6 +54,8 @@ abstract class ListFragment : Fragment(), KodeinAware {
     internal val moeApi: MoebooruApi by instance()
     internal val gelApi: GelbooruApi by instance()
     internal val sankakuApi: SankakuApi by instance()
+    internal val idolApi: IdolApi by instance()
+    internal val hydrusApi: HydrusApi by instance()
     internal val ioExecutor: Executor by instance()
 
     internal lateinit var searchBar: SearchBar
@@ -80,7 +79,8 @@ abstract class ListFragment : Fragment(), KodeinAware {
                 moebooruApi = moeApi,
                 danbooruOneApi = danOneApi,
                 gelbooruApi = gelApi,
-                sankakuApi = sankakuApi
+                sankakuApi = sankakuApi,
+                idolApi = idolApi
             )
         )
     }

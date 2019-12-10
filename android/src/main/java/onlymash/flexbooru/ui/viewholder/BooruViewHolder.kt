@@ -22,8 +22,8 @@ import android.view.View
 import androidx.appcompat.widget.ActionMenuView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.recyclerview.widget.RecyclerView
-import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.R
+import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.database.BooruManager
 import onlymash.flexbooru.entity.common.Booru
 import onlymash.flexbooru.extension.copyText
@@ -75,6 +75,7 @@ class BooruViewHolder(itemView: View,
                 Constants.TYPE_DANBOORU_ONE -> R.string.booru_type_danbooru_one
                 Constants.TYPE_GELBOORU -> R.string.booru_type_gelbooru
                 Constants.TYPE_SANKAKU -> R.string.booru_type_sankaku
+                Constants.TYPE_HYDRUS -> R.string.booru_type_hydrus
                 else -> R.string.booru_type_unknown
             }
         )

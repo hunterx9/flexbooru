@@ -22,22 +22,19 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_account.*
 import kotlinx.android.synthetic.main.toolbar.*
-import kotlinx.coroutines.*
-import onlymash.flexbooru.common.Constants
+import kotlinx.coroutines.launch
 import onlymash.flexbooru.R
+import onlymash.flexbooru.api.*
+import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.common.Settings
-import onlymash.flexbooru.api.DanbooruApi
-import onlymash.flexbooru.api.DanbooruOneApi
-import onlymash.flexbooru.api.MoebooruApi
-import onlymash.flexbooru.api.SankakuApi
 import onlymash.flexbooru.database.BooruManager
 import onlymash.flexbooru.database.CookieManager
 import onlymash.flexbooru.database.UserManager
-import onlymash.flexbooru.glide.GlideApp
 import onlymash.flexbooru.entity.common.Booru
 import onlymash.flexbooru.entity.common.User
 import onlymash.flexbooru.extension.NetResult
 import onlymash.flexbooru.extension.launchUrl
+import onlymash.flexbooru.glide.GlideApp
 import onlymash.flexbooru.repository.account.UserRepositoryImpl
 import org.kodein.di.erased.instance
 
@@ -53,6 +50,7 @@ class AccountActivity : BaseActivity() {
     private val danOneApi: DanbooruOneApi by instance()
     private val moeApi: MoebooruApi by instance()
     private val sankakuApi: SankakuApi by instance()
+    private val hydrusApi: HydrusApi by instance()
 
     private lateinit var booru: Booru
     private lateinit var user: User
@@ -62,7 +60,8 @@ class AccountActivity : BaseActivity() {
             danbooruApi = danApi,
             danbooruOneApi = danOneApi,
             moebooruApi = moeApi,
-            sankakuApi = sankakuApi
+            sankakuApi = sankakuApi,
+            hydrusApi = hydrusApi
         )
     }
 
@@ -156,6 +155,7 @@ class AccountActivity : BaseActivity() {
             val keyword = when (booru.type) {
                 Constants.TYPE_DANBOORU,
                 Constants.TYPE_DANBOORU_ONE,
+                Constants.TYPE_HYDRUS,
                 Constants.TYPE_SANKAKU -> String.format("fav:%s", user.name)
                 Constants.TYPE_MOEBOORU -> String.format("vote:3:%s order:vote", user.name)
                 else -> throw IllegalStateException("unknown booru type: ${booru.type}")
@@ -167,12 +167,23 @@ class AccountActivity : BaseActivity() {
                 Snackbar.make(toolbar, getString(R.string.msg_not_supported), Snackbar.LENGTH_LONG).show()
                 return@setOnClickListener
             }
+            if (booru.type == Constants.TYPE_HYDRUS) {
+                Snackbar.make(toolbar, getString(R.string.msg_not_supported), Snackbar.LENGTH_LONG)
+                    .show()
+                return@setOnClickListener
+            }
+
             val keyword = String.format("user:%s", user.name)
             SearchActivity.startActivity(this, keyword)
         }
         comments_action_button.setOnClickListener {
             if (booru.type == Constants.TYPE_GELBOORU) {
                 Snackbar.make(toolbar, getString(R.string.msg_not_supported), Snackbar.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            if (booru.type == Constants.TYPE_HYDRUS) {
+                Snackbar.make(toolbar, getString(R.string.msg_not_supported), Snackbar.LENGTH_LONG)
+                    .show()
                 return@setOnClickListener
             }
             CommentActivity.startActivity(this, username = user.name)

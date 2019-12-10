@@ -23,6 +23,7 @@ import java.util.*
 object Settings {
 
     const val SAFE_MODE_KEY = "settings_safe_mode"
+    const val EXPLICIT_MODE_KEY = "settings_explicit_mode"
     const val PAGE_LIMIT_KEY = "settings_page_limit"
     const val MUZEI_LIMIT_KEY = "settings_muzei_limit"
     const val BROWSE_SIZE_KEY = "settings_browse_size"
@@ -67,6 +68,10 @@ object Settings {
     var safeMode: Boolean
         get() = sp.getBoolean(SAFE_MODE_KEY, true)
         set(value) = sp.edit().putBoolean(SAFE_MODE_KEY, value).apply()
+
+    var explicitMode: Boolean
+        get() = sp.getBoolean(EXPLICIT_MODE_KEY, true)
+        set(value) = sp.edit().putBoolean(EXPLICIT_MODE_KEY, value).apply()
 
     var pageLimit: Int
         get() = sp.getString(PAGE_LIMIT_KEY, "10")!!.toInt()
@@ -191,4 +196,6 @@ object Settings {
     var sauceNaoApiKey: String
         get() = sp.getString(SAUCE_NAO_API_KEY_KEY, "") ?: ""
         set(value) = sp.edit().putString(SAUCE_NAO_API_KEY_KEY, value).apply()
+
+
 }

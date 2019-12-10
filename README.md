@@ -1,6 +1,5 @@
 # Flexbooru
-
-This is my mod on flexbooru(checkout branch: dev not master) and all the changes in my build is listed below:
+This is my mod on flexbooru and all the changes in my build is listed below:
 1. all the dev booru are added by default and removed limit
 2. speed loading of posts for smooth experience   - enable preloading for pager adapter
 3. added post browse tap on screen to simulate swipe left/right for larger screens
@@ -11,10 +10,6 @@ This is my mod on flexbooru(checkout branch: dev not master) and all the changes
 8. added play button for gif and video
     - gif play btn for saving bandwidth
     - video play btn that shows preview instead of blank as vid loads
-9. added nsfw only and safe mode only modes in settings
-
-Still a lot of bugfixes and additions to be made. DM me on flexbooru discord for beta testing,bugfixes and suggestions :).
-
 A booru client for Android, support [Danbooru](https://github.com/r888888888/danbooru), [Moebooru](https://github.com/moebooru/moebooru), Gelbooru, Sankaku, etc.
 
 [![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/flexbooru)

@@ -13,17 +13,21 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package onlymash.flexbooru.repository.tag
+package onlymash.flexbooru.entity.common
 
-import onlymash.flexbooru.entity.common.TagIdol
-import onlymash.flexbooru.entity.tag.*
-import onlymash.flexbooru.repository.Listing
+import com.google.gson.annotations.SerializedName
+import onlymash.flexbooru.entity.tag.TagBase
 
-interface TagRepository {
-    fun getDanTags(search: SearchTag): Listing<TagDan>
-    fun getMoeTags(search: SearchTag): Listing<TagMoe>
-    fun getDanOneTags(search: SearchTag): Listing<TagDanOne>
-    fun getGelTags(search: SearchTag): Listing<TagGel>
-    fun getSankakuTags(search: SearchTag): Listing<TagSankaku>
-    fun getIdolTags(search: SearchTag): Listing<TagIdol>
+data class TagIdol(
+    @SerializedName("count")
+    val count: Int,
+    @SerializedName("id")
+    val id: Int,
+    @SerializedName("name")
+    val name: String,
+    @SerializedName("type")
+    val type: Int
+) : TagBase() {
+    override fun getTagId(): Int = id
+    override fun getTagName(): String = name
 }

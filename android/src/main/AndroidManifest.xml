@@ -70,7 +70,8 @@
         </activity>
         <activity
                 android:name=".ui.activity.BrowseActivity"
-                android:theme="@style/AppTheme.Browse">
+            android:hardwareAccelerated="true"
+            android:theme="@style/AppTheme.Browse">
         </activity>
         <activity
                 android:name=".ui.activity.ScannerActivity"

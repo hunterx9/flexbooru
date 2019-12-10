@@ -96,6 +96,7 @@ class PlayerHolder(private val context: Context) {
         with(exoPlayer) {
             if (currentPlayerState != null) {
                 // Save state
+
                 with(currentPlayerState!!) {
                     position = currentPosition
                     window = currentWindowIndex

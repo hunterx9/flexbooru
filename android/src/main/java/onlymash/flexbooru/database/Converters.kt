@@ -22,6 +22,7 @@ import onlymash.flexbooru.entity.artist.ArtistUrlDan
 import onlymash.flexbooru.entity.common.DanOneDate
 import onlymash.flexbooru.entity.common.SankakuAuthor
 import onlymash.flexbooru.entity.common.SankakuTag
+import onlymash.flexbooru.entity.common.TagIdol
 
 /**
  * room database TypeConverter
@@ -42,6 +43,10 @@ class Converters {
      * */
     @TypeConverter
     fun fromStringListToString(list: MutableList<String>): String =
+        Gson().toJson(list)
+
+    @TypeConverter
+    fun fromIntListToString(list: List<Int>): String? =
         Gson().toJson(list)
 
     /**
@@ -93,4 +98,30 @@ class Converters {
         val listType = object : TypeToken<MutableList<SankakuTag>>(){}.type
         return Gson().fromJson<MutableList<SankakuTag>>(value, listType)
     }
+
+
+    @TypeConverter
+    fun fromIdolTagToString(tag: TagIdol): String =
+        Gson().toJson(tag)
+
+    @TypeConverter
+    fun fromStringToIdolTag(value: String): TagIdol =
+        Gson().fromJson<TagIdol>(value, object : TypeToken<TagIdol>() {}.type)
+
+    @TypeConverter
+    fun fromIdolTagListToString(tags: MutableList<TagIdol>): String =
+        Gson().toJson(tags)
+
+    @TypeConverter
+    fun fromStringToIdolTagList(value: String): MutableList<TagIdol> {
+        val listType = object : TypeToken<MutableList<TagIdol>>() {}.type
+        return Gson().fromJson<MutableList<TagIdol>>(value, listType)
+    }
+
+    @TypeConverter
+    fun fromStringToIntList(value: String): List<Int> {
+        val listType = object : TypeToken<MutableList<Int>>() {}.type
+        return Gson().fromJson<List<Int>>(value, listType)
+    }
+
 }

@@ -15,15 +15,24 @@
 
 package onlymash.flexbooru.repository.tag
 
+import androidx.lifecycle.MutableLiveData
+import androidx.paging.DataSource
+import onlymash.flexbooru.api.IdolApi
 import onlymash.flexbooru.entity.common.TagIdol
-import onlymash.flexbooru.entity.tag.*
-import onlymash.flexbooru.repository.Listing
+import onlymash.flexbooru.entity.tag.SearchTag
+import java.util.concurrent.Executor
 
-interface TagRepository {
-    fun getDanTags(search: SearchTag): Listing<TagDan>
-    fun getMoeTags(search: SearchTag): Listing<TagMoe>
-    fun getDanOneTags(search: SearchTag): Listing<TagDanOne>
-    fun getGelTags(search: SearchTag): Listing<TagGel>
-    fun getSankakuTags(search: SearchTag): Listing<TagSankaku>
-    fun getIdolTags(search: SearchTag): Listing<TagIdol>
+class TagIdolDataSourceFactory(
+    private val idolApi: IdolApi,
+    private val search: SearchTag,
+    private val retryExecutor: Executor
+) : DataSource.Factory<Int, TagIdol>() {
+    //source livedata
+    val sourceLiveData = MutableLiveData<TagIdolDataSource>()
+
+    override fun create(): DataSource<Int, TagIdol> {
+        val source = TagIdolDataSource(idolApi, search, retryExecutor)
+        sourceLiveData.postValue(source)
+        return source
+    }
 }

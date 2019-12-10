@@ -17,13 +17,14 @@ package onlymash.flexbooru.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
+import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.toolbar.*
-import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.R
+import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.database.BooruManager
-import onlymash.flexbooru.extension.isHost
 import onlymash.flexbooru.ui.fragment.BooruConfigFragment
 
 class BooruConfigActivity : BaseActivity() {
@@ -43,10 +44,26 @@ class BooruConfigActivity : BaseActivity() {
         }
         toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
+                R.id.action_booru_config_hydrus_key -> {
+                    val alertBuilder = AlertDialog.Builder(this@BooruConfigActivity)
+                    val nameText = EditText(this@BooruConfigActivity);
+                    nameText.inputType = InputType.TYPE_CLASS_TEXT
+                    alertBuilder.setView(nameText)
+                    alertBuilder
+                        .setTitle(R.string.booru_config_dialog_hydrus_key)
+                        .setPositiveButton(R.string.dialog_yes) { a, b ->
+                            val text = nameText.text.toString()
+
+                            finish()
+                        }
+                        .setNegativeButton(R.string.dialog_no, null)
+                        .create()
+                        .show()
+                }
                 R.id.action_booru_config_delete -> {
                     AlertDialog.Builder(this@BooruConfigActivity)
                         .setTitle(R.string.booru_config_dialog_title_delete)
-                        .setPositiveButton(R.string.dialog_yes) { _, _ ->
+                        .setPositiveButton(R.string.dialog_yes) { a, b ->
                             BooruManager.deleteBooru(BooruConfigFragment.booruUid)
                             val intent = Intent().apply {
                                 putExtra(Constants.EXTRA_RESULT_KEY, Constants.RESULT_DELETE)
@@ -63,16 +80,25 @@ class BooruConfigActivity : BaseActivity() {
                     val hashBoorus = arrayOf(
                         Constants.TYPE_MOEBOORU,
                         Constants.TYPE_DANBOORU_ONE,
-                        Constants.TYPE_SANKAKU
+                        Constants.TYPE_SANKAKU,
+                        Constants.TYPE_HYDRUS
                         )
                     when {
                         booru.name.isEmpty() -> Snackbar.make(toolbar, R.string.booru_config_name_cant_empty, Snackbar.LENGTH_LONG).show()
                         booru.host.isEmpty() -> Snackbar.make(toolbar, R.string.booru_config_host_cant_empty, Snackbar.LENGTH_LONG).show()
-                        !booru.host.isHost() -> {
-                            Snackbar.make(toolbar, getString(R.string.booru_config_host_invalid), Snackbar.LENGTH_LONG).show()
-                        }
+//                        !booru.host.isEmpty() && booru.type == Constants.TYPE_HYDRUS -> {
+//                            if (booru.host.contains(":")){
+//                                val splits = booru.host.split(":")
+//                                val host = splits[0]
+//                                val port= splits[1]
+//                                Snackbar.make(toolbar, "Host is $host and port is $port", Snackbar.LENGTH_LONG).show()
+//                            }else{
+//                                Snackbar.make(toolbar, "Host is ${booru.host}", Snackbar.LENGTH_LONG).show()
+//                            }
+//
+//                        }
                         booru.type in hashBoorus && booru.hashSalt.isEmpty() -> Snackbar.make(toolbar, R.string.booru_config_hash_salt_cant_empty, Snackbar.LENGTH_LONG).show()
-                        booru.type in hashBoorus && !booru.hashSalt.contains(Constants.HASH_SALT_CONTAINED) -> {
+                        booru.type in hashBoorus && !booru.hashSalt.contains(Constants.HASH_SALT_CONTAINED) && booru.type != Constants.TYPE_HYDRUS -> {
                             Snackbar.make(toolbar, getString(R.string.booru_config_hash_salt_must_contain_yp), Snackbar.LENGTH_LONG).show()
                         }
                         booru.uid == -1L -> {
