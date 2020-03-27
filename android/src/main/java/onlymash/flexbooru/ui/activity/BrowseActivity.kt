@@ -34,7 +34,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.*
-import androidx.viewpager.widget.ViewPager
+
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.exoplayer2.ui.PlayerView
 import com.squareup.picasso.Picasso
@@ -85,11 +85,13 @@ class BrowseActivity : BaseActivity() {
         private const val ACTION_SEND = 103
         private const val ALPHA_MAX = 0xFF
         private const val ALPHA_MIN = 0x00
-        fun startActivity(activity: Activity,
-                          view: View,
-                          postId: Int,
-                          keyword: String,
-                          pageType: Int) {
+        fun startActivity(
+            activity: Activity,
+            view: View,
+            postId: Int,
+            keyword: String,
+            pageType: Int
+        ) {
             val intent = Intent(activity, BrowseActivity::class.java)
                 .apply {
                     putExtra(Constants.ID_KEY, postId)
@@ -97,8 +99,14 @@ class BrowseActivity : BaseActivity() {
                     putExtra(Constants.PAGE_TYPE_KEY, pageType)
                 }
             val tranName = when (pageType) {
-                Constants.PAGE_TYPE_POST -> activity.getString(R.string.post_transition_name, postId)
-                Constants.PAGE_TYPE_POPULAR -> activity.getString(R.string.post_popular_transition_name, postId)
+                Constants.PAGE_TYPE_POST -> activity.getString(
+                    R.string.post_transition_name,
+                    postId
+                )
+                Constants.PAGE_TYPE_POPULAR -> activity.getString(
+                    R.string.post_popular_transition_name,
+                    postId
+                )
                 else -> throw IllegalStateException("unknown post type $pageType")
             }
             val options = ActivityOptionsCompat
@@ -107,6 +115,7 @@ class BrowseActivity : BaseActivity() {
         }
     }
 
+    private var pagePostion: Int = 0
     private val danApi: DanbooruApi by instance()
     private val danOneApi: DanbooruOneApi by instance()
     private val moeApi: MoebooruApi by instance()
@@ -145,13 +154,17 @@ class BrowseActivity : BaseActivity() {
                 }
             }
         }
-        toolbar.title = String.format(getString(R.string.browse_toolbar_title_and_id), posts[position].getPostId())
+        toolbar.title = String.format(
+            getString(R.string.browse_toolbar_title_and_id),
+            posts[position].getPostId()
+        )
         pagerAdapter.updateData(posts)
         pager_browse.setCurrentItem(if (currentPosition >= 0) currentPosition else position, false)
         if (canTransition) startPostponedEnterTransition()
         if (url.isNotEmpty() && !url.isImage()) {
             Handler().postDelayed({
-                val playerView: Any? = pager_browse.findViewWithTag(String.format("player_%d", position))
+                val playerView: Any? =
+                    pager_browse.findViewWithTag(String.format("player_%d", position))
                 if (playerView is PlayerView) {
                     currentPlayerView = playerView
                     val uri = Uri.parse(url)
@@ -173,6 +186,15 @@ class BrowseActivity : BaseActivity() {
         override fun onPageScrollStateChanged(state: Int) {
             currentPlayerView?.onPause()
         }
+
+        override fun onPageScrolled(
+            position: Int,
+            positionOffset: Float,
+            positionOffsetPixels: Int
+        ) {
+            pagePostion = position
+        }
+
         override fun onPageSelected(position: Int) {
             var url = ""
             var id = -1
@@ -180,7 +202,8 @@ class BrowseActivity : BaseActivity() {
                 url = it.getSampleUrl()
                 id = it.getPostId()
             }
-            if (id > 0) toolbar.title = String.format(getString(R.string.browse_toolbar_title_and_id), id)
+            if (id > 0) toolbar.title =
+                String.format(getString(R.string.browse_toolbar_title_and_id), id)
             val action = if (pageType == Constants.PAGE_TYPE_POST)
                 ACTION_NORMAL
             else
@@ -192,7 +215,8 @@ class BrowseActivity : BaseActivity() {
             }
             this@BrowseActivity.sendBroadcast(intent)
             if (url.isNotEmpty() && !url.isImage()) {
-                val playerView: Any? = pager_browse.findViewWithTag(String.format("player_%d", position))
+                val playerView: Any? =
+                    pager_browse.findViewWithTag(String.format("player_%d", position))
                 if (playerView is PlayerView) {
                     currentPlayerView = playerView
                     val uri = Uri.parse(url)
@@ -213,7 +237,10 @@ class BrowseActivity : BaseActivity() {
     }
 
     private val sharedElementCallback = object : SharedElementCallback() {
-        override fun onMapSharedElements(names: MutableList<String>, sharedElements: MutableMap<String, View>) {
+        override fun onMapSharedElements(
+            names: MutableList<String>,
+            sharedElements: MutableMap<String, View>
+        ) {
             val pos = pager_browse.currentItem
             val sharedElement = pager_browse.findViewWithTag<ViewGroup>(pos)?.getChildAt(0)
             if (sharedElement == null) {
@@ -285,11 +312,13 @@ class BrowseActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            window.attributes.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
         window.showBar()
         setContentView(R.layout.activity_browse)
-        pageType = intent?.getIntExtra(Constants.PAGE_TYPE_KEY, Constants.PAGE_TYPE_POST) ?: Constants.PAGE_TYPE_POST
+        pageType = intent?.getIntExtra(Constants.PAGE_TYPE_KEY, Constants.PAGE_TYPE_POST)
+            ?: Constants.PAGE_TYPE_POST
         colorDrawable = ColorDrawable(ContextCompat.getColor(this, R.color.black))
         pager_browse.background = colorDrawable
         postponeEnterTransition()
@@ -354,7 +383,8 @@ class BrowseActivity : BaseActivity() {
             picasso = Picasso.Builder(this).build(),
             onDismissListener = onDismissListener,
             pageType = pageType,
-            ioExecutor = ioExecutor)
+            ioExecutor = ioExecutor
+        )
         pagerAdapter.setPhotoViewListener(photoViewListener)
         pager_browse.adapter = pagerAdapter
         pager_browse.registerOnPageChangeCallback(pagerChangeCallback)
@@ -369,6 +399,7 @@ class BrowseActivity : BaseActivity() {
             handleResult(data)
         }
         initBottomBar()
+        initSliderBar()
     }
 
     private fun startAccountConfigAndFinish() {
@@ -393,20 +424,29 @@ class BrowseActivity : BaseActivity() {
                             host = booru.host,
                             post_id = post.id,
                             username = user.name,
-                            auth_key = user.apiKey ?: return@let)
+                            auth_key = user.apiKey ?: return@let
+                        )
                         val postFav = getCurrentPostFav()
                         if (postFav is PostDan) {
                             lifecycleScope.launch {
                                 val result = voteRepository.removeDanFav(vote, postFav)
                                 if (result is NetResult.Error) {
-                                    Toast.makeText(this@BrowseActivity, result.errorMsg, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        this@BrowseActivity,
+                                        result.errorMsg,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                         } else {
                             lifecycleScope.launch {
                                 val result = voteRepository.addDanFav(vote, post)
                                 if (result is NetResult.Error) {
-                                    Toast.makeText(this@BrowseActivity, result.errorMsg, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        this@BrowseActivity,
+                                        result.errorMsg,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                         }
@@ -420,7 +460,8 @@ class BrowseActivity : BaseActivity() {
                                     score = 0,
                                     post_id = post.id,
                                     username = user.name,
-                                    auth_key = user.passwordHash ?: return@let)
+                                    auth_key = user.passwordHash ?: return@let
+                                )
                             }
                             else -> {
                                 Vote(
@@ -429,13 +470,18 @@ class BrowseActivity : BaseActivity() {
                                     score = 3,
                                     post_id = post.id,
                                     username = user.name,
-                                    auth_key = user.passwordHash ?: return@let)
+                                    auth_key = user.passwordHash ?: return@let
+                                )
                             }
                         }
                         lifecycleScope.launch {
                             val result = voteRepository.voteMoePost(vote)
                             if (result is NetResult.Error) {
-                                Toast.makeText(this@BrowseActivity, result.errorMsg, Toast.LENGTH_LONG).show()
+                                Toast.makeText(
+                                    this@BrowseActivity,
+                                    result.errorMsg,
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         }
                     }
@@ -446,19 +492,28 @@ class BrowseActivity : BaseActivity() {
                             host = booru.host,
                             post_id = post.id,
                             username = user.name,
-                            auth_key = user.passwordHash ?: return@let)
+                            auth_key = user.passwordHash ?: return@let
+                        )
                         if (postFav is PostDanOne) {
                             lifecycleScope.launch {
                                 val result = voteRepository.removeDanOneFav(vote, postFav)
                                 if (result is NetResult.Error) {
-                                    Toast.makeText(this@BrowseActivity, result.errorMsg, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        this@BrowseActivity,
+                                        result.errorMsg,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                         } else {
                             lifecycleScope.launch {
                                 val result = voteRepository.addDanOneFav(vote, post)
                                 if (result is NetResult.Error) {
-                                    Toast.makeText(this@BrowseActivity, result.errorMsg, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        this@BrowseActivity,
+                                        result.errorMsg,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                         }
@@ -470,19 +525,28 @@ class BrowseActivity : BaseActivity() {
                             host = booru.host,
                             post_id = post.id,
                             username = user.name,
-                            auth_key = user.passwordHash ?: return@let)
+                            auth_key = user.passwordHash ?: return@let
+                        )
                         if (postFav is PostSankaku) {
                             lifecycleScope.launch {
                                 val result = voteRepository.removeSankakuFav(vote, postFav)
                                 if (result is NetResult.Error) {
-                                    Toast.makeText(this@BrowseActivity, result.errorMsg, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        this@BrowseActivity,
+                                        result.errorMsg,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                         } else {
                             lifecycleScope.launch {
                                 val result = voteRepository.addSankakuFav(vote, post)
                                 if (result is NetResult.Error) {
-                                    Toast.makeText(this@BrowseActivity, result.errorMsg, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        this@BrowseActivity,
+                                        result.errorMsg,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                         }
@@ -498,10 +562,18 @@ class BrowseActivity : BaseActivity() {
                         lifecycleScope.launch {
                             when (val result = voteRepository.addGelFav(vote, post)) {
                                 is NetResult.Success -> {
-                                    Toast.makeText(this@BrowseActivity, "Success", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        this@BrowseActivity,
+                                        "Success",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                                 is NetResult.Error -> {
-                                    Toast.makeText(this@BrowseActivity, "Error: ${result.errorMsg}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        this@BrowseActivity,
+                                        "Error: ${result.errorMsg}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                         }
@@ -521,14 +593,16 @@ class BrowseActivity : BaseActivity() {
     private fun shareLink() {
         val url = getLink()
         if (!url.isNullOrEmpty()) {
-            startActivity(Intent.createChooser(
-                Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, url)
-                },
-                getString(R.string.share_via)
-            ))
+            startActivity(
+                Intent.createChooser(
+                    Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, url)
+                    },
+                    getString(R.string.share_via)
+                )
+            )
         }
     }
 
@@ -536,8 +610,18 @@ class BrowseActivity : BaseActivity() {
         is PostDan -> String.format("%s://%s/posts/%d", booru.scheme, booru.host, post.id)
         is PostDanOne -> String.format("%s://%s/post/show/%d", booru.scheme, booru.host, post.id)
         is PostMoe -> String.format("%s://%s/post/show/%d", booru.scheme, booru.host, post.id)
-        is PostGel -> String.format("%s://%s/index.php?page=post&s=view&id=%d", booru.scheme, booru.host, post.id)
-        is PostSankaku -> String.format("%s://%s/post/show/%d", booru.scheme, booru.host.replace("capi-v2.", "beta."), post.id)
+        is PostGel -> String.format(
+            "%s://%s/index.php?page=post&s=view&id=%d",
+            booru.scheme,
+            booru.host,
+            post.id
+        )
+        is PostSankaku -> String.format(
+            "%s://%s/post/show/%d",
+            booru.scheme,
+            booru.host.replace("capi-v2.", "beta."),
+            post.id
+        )
         else -> null
     }
 
@@ -622,34 +706,43 @@ class BrowseActivity : BaseActivity() {
                     ACTION_SAVE -> {
                         val uri = getSaveUri(fileName) ?: return@launch
                         if (copyFile(file, uri)) {
-                            Toast.makeText(this@BrowseActivity,
-                                getString(R.string.msg_file_save_success, DocumentsContract.getDocumentId(uri)),
-                                Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                this@BrowseActivity,
+                                getString(
+                                    R.string.msg_file_save_success,
+                                    DocumentsContract.getDocumentId(uri)
+                                ),
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                     ACTION_SET_AS -> {
                         val cacheFile = File(externalCacheDir, fileName)
                         val desUri = cacheFile.toUri()
                         if (copyFile(file, desUri)) {
-                            this@BrowseActivity.startActivity(Intent.createChooser(
-                                Intent(Intent.ACTION_ATTACH_DATA).apply {
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    putExtra(Intent.EXTRA_MIME_TYPES, fileName.getMimeType())
-                                    data = getUriForFile(cacheFile)
-                                },
-                                getString(R.string.share_via)
-                            ))
+                            this@BrowseActivity.startActivity(
+                                Intent.createChooser(
+                                    Intent(Intent.ACTION_ATTACH_DATA).apply {
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        putExtra(Intent.EXTRA_MIME_TYPES, fileName.getMimeType())
+                                        data = getUriForFile(cacheFile)
+                                    },
+                                    getString(R.string.share_via)
+                                )
+                            )
                         }
                     }
                     ACTION_SEND -> {
-                        this@BrowseActivity.startActivity(Intent.createChooser(
-                            Intent(Intent.ACTION_SEND).apply {
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                type = fileName.getMimeType()
-                                putExtra(Intent.EXTRA_STREAM, getUriForFile(file))
-                            },
-                            getString(R.string.share_via)
-                        ))
+                        this@BrowseActivity.startActivity(
+                            Intent.createChooser(
+                                Intent(Intent.ACTION_SEND).apply {
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    type = fileName.getMimeType()
+                                    putExtra(Intent.EXTRA_STREAM, getUriForFile(file))
+                                },
+                                getString(R.string.share_via)
+                            )
+                        )
                     }
                 }
             }
@@ -712,5 +805,32 @@ class BrowseActivity : BaseActivity() {
                 return FavPostViewModel(loader) as T
             }
         })[FavPostViewModel::class.java]
+    }
+
+
+    private fun initSliderBar() {
+        prevBtn.setOnClickListener {
+            if (pagePostion != 0)
+                pager_browse.setCurrentItem(pagePostion - 1)
+        }
+        nextBtn.setOnClickListener {
+            if (pagePostion < posts?.size!!)
+                pager_browse.setCurrentItem(pagePostion + 1)
+        }
+
+        if (booru.type == Constants.TYPE_SANKAKU) {
+            recommend_btn.visibility = View.VISIBLE
+            recommend_btn.setOnClickListener {
+                val id = getCurrentPostId()
+                if (id > 0) {
+                    SearchActivity.startActivity(
+                        this,
+                        "recommended_for_post:$id"
+                    )
+                }
+            }
+        }
+
+
     }
 }

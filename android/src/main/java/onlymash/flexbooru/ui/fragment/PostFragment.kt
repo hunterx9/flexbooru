@@ -325,6 +325,12 @@ class PostFragment : ListFragment(),
                         refreshSankaku()
                     }
                 }
+                Constants.TYPE_IDOL -> {
+                    postViewModel.apply {
+                        show(search, tagBlacklists)
+                        refreshIdol()
+                    }
+                }
             }
         }
         override fun onUpdate(user: User) {
@@ -372,6 +378,14 @@ class PostFragment : ListFragment(),
                 postViewModel.apply {
                     show(search, tagBlacklists)
                     refreshSankaku()
+                }
+            }
+            Constants.TYPE_IDOL -> {
+                search.username = user.name
+                search.auth_key = user.passwordHash ?: ""
+                postViewModel.apply {
+                    show(search, tagBlacklists)
+                    refreshIdol()
                 }
             }
         }
@@ -445,6 +459,8 @@ class PostFragment : ListFragment(),
                 moebooruApi = moeApi,
                 gelbooruApi = gelApi,
                 sankakuApi = sankakuApi,
+                idolApi = idolApi,
+                hydrusApi = hydrusApi,
                 ioExecutor = ioExecutor
             )
         )
@@ -476,11 +492,12 @@ class PostFragment : ListFragment(),
         val orders = resources.getStringArray(when(booruType) {
             Constants.TYPE_DANBOORU -> R.array.filter_order_danbooru
             Constants.TYPE_SANKAKU -> R.array.filter_order_sankaku
+            Constants.TYPE_IDOL -> R.array.filter_order_sankaku
             else -> R.array.filter_order
         })
         val ratings = resources.getStringArray(R.array.filter_rating)
         val thresholds =
-            if (booruType == Constants.TYPE_SANKAKU)
+            if (booruType == Constants.TYPE_SANKAKU || booruType == Constants.TYPE_IDOL)
                 resources.getStringArray(R.array.filter_threshold)
             else arrayOf()
         tagFilterAdapter = TagFilterAdapter(
@@ -575,6 +592,33 @@ class PostFragment : ListFragment(),
                 })
                 initSwipeToRefreshSankaku()
             }
+            Constants.TYPE_IDOL -> {
+                postViewModel.postsIdol.observe(viewLifecycleOwner, Observer<PagedList<PostIdol>> { posts ->
+                    @Suppress("UNCHECKED_CAST")
+                    postAdapter.submitList(posts as PagedList<PostBase>)
+                })
+                postViewModel.networkStateIdol.observe(
+                    viewLifecycleOwner,
+                    Observer<NetworkState> { networkState ->
+                        postAdapter.setNetworkState(networkState)
+                    })
+                initSwipeToRefreshIdol()
+            }
+
+            Constants.TYPE_HYDRUS -> {
+                postViewModel.postsHydrus.observe(
+                    viewLifecycleOwner, Observer<PagedList<PostHydrusFileResponse>> { posts ->
+                        @Suppress("UNCHECKED_CAST")
+//                        var test = db.postHydrusDao().getPostsRaw("192.168.100.122","test")
+                        postAdapter.submitList(posts as PagedList<PostBase>)
+                    })
+                postViewModel.networkStateHydrus.observe(
+                    viewLifecycleOwner,
+                    Observer<NetworkState> { networkState ->
+                        postAdapter.setNetworkState(networkState)
+                    })
+                initSwipeToRefreshHydrus()
+            }
         }
         tagBlacklistViewModel = getViewModel(object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -598,6 +642,7 @@ class PostFragment : ListFragment(),
             Constants.TYPE_DANBOORU_ONE -> postViewModel.retryDanOne()
             Constants.TYPE_GELBOORU -> postViewModel.retryGel()
             Constants.TYPE_SANKAKU -> postViewModel.retrySankaku()
+            Constants.TYPE_IDOL -> postViewModel.retryIdol()
         }
     }
 
@@ -635,6 +680,21 @@ class PostFragment : ListFragment(),
         })
         swipe_refresh.setOnRefreshListener { postViewModel.refreshSankaku() }
     }
+
+    private fun initSwipeToRefreshIdol() {
+        postViewModel.refreshStateIdol.observe(viewLifecycleOwner, Observer<NetworkState> {
+            swipe_refresh.isRefreshing = it == NetworkState.LOADING
+        })
+        swipe_refresh.setOnRefreshListener { postViewModel.refreshIdol() }
+    }
+
+    private fun initSwipeToRefreshHydrus() {
+        postViewModel.refreshStateHydrus.observe(viewLifecycleOwner, Observer<NetworkState> {
+            swipe_refresh.isRefreshing = it == NetworkState.LOADING
+        })
+        swipe_refresh.setOnRefreshListener { postViewModel.refreshHydrus() }
+    }
+
 
     @Suppress("UNCHECKED_CAST")
     private fun getPostViewModel(repo: PostRepository): PostViewModel {

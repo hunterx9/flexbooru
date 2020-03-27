@@ -28,9 +28,11 @@ import android.widget.ProgressBar
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
@@ -38,6 +40,7 @@ import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.github.chrisbanes.photoview.PhotoView
 import com.google.android.exoplayer2.ui.PlayerView
+import com.koushikdutta.ion.Ion
 import com.squareup.picasso.Picasso
 import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.R
@@ -47,6 +50,8 @@ import onlymash.flexbooru.glide.GlideRequests
 import onlymash.flexbooru.decoder.CustomDecoder
 import onlymash.flexbooru.decoder.CustomRegionDecoder
 import onlymash.flexbooru.extension.isGifImage
+import onlymash.flexbooru.extension.isHydrus
+import onlymash.flexbooru.extension.isIdol
 import onlymash.flexbooru.extension.isStillImage
 import onlymash.flexbooru.widget.DismissFrameLayout
 import java.io.File
@@ -103,7 +108,7 @@ class BrowseAdapter(private val glideRequests: GlideRequests,
         }
         if (url.isNotEmpty()) {
             when {
-                url.isStillImage() -> {
+                url.isHydrus() -> {
                     val stillView = SubsamplingScaleImageView(layout.context).apply {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -155,6 +160,86 @@ class BrowseAdapter(private val glideRequests: GlideRequests,
                             }
                         })
                 }
+                url.isIdol() && url.isStillImage() -> {
+                    val imageView = PhotoView(layout.context).apply {
+                        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+                        transitionName = tranName
+                        setOnViewTapListener { _, _, _ ->
+                            photoViewListener?.onClickPhotoView()
+                        }
+                    }
+                    Ion.with(imageView)
+                        .apply {
+                            RequestOptions.diskCacheStrategyOf(
+                                DiskCacheStrategy.AUTOMATIC
+                            )
+                        }
+                        .error(R.drawable.avatar_account)
+                        .load(url)
+                }
+                url.isStillImage() && !url.isIdol() -> {
+                    val stillView = SubsamplingScaleImageView(layout.context).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        transitionName = tranName
+                        setOnClickListener {
+                            photoViewListener?.onClickPhotoView()
+                        }
+                        setExecutor(ioExecutor)
+                        setBitmapDecoderFactory { CustomDecoder(picasso) }
+                        setRegionDecoderFactory { CustomRegionDecoder() }
+                    }
+                    val colorMatrix = ColorMatrix().apply {
+                        setSaturation(0f)
+                        set(
+                            floatArrayOf(
+                                1f, 0f, 0f, 0f, 0f, // R
+                                0f, 1f, 0f, 0f, 0f, // G
+                                0f, 0f, 1f, 0f, 0f, // B
+                                0f, 0f, 0f, 1f, 0f  // A
+                            )
+                        )
+                    }
+                    val progressBar = ProgressBar(layout.context).apply {
+                        layoutParams = FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.WRAP_CONTENT,
+                            FrameLayout.LayoutParams.WRAP_CONTENT,
+                            Gravity.CENTER)
+                        indeterminateDrawable.colorFilter = ColorMatrixColorFilter(colorMatrix)
+                    }
+                    layout.apply {
+                        removeAllViewsInLayout()
+                        addView(stillView, 0)
+                        addView(progressBar, 1)
+                    }
+                    stillView.setOnImageEventListener(object :
+                        SubsamplingScaleImageView.OnImageEventListener {
+                        override fun onImageLoaded() {
+                            layout.removeView(progressBar)
+                        }
+
+                        override fun onReady() {}
+                        override fun onTileLoadError(e: Exception?) {}
+                        override fun onPreviewReleased() {}
+                        override fun onImageLoadError(e: Exception?) {}
+                        override fun onPreviewLoadError(e: Exception?) {}
+                    })
+                    glideRequests.downloadOnly().load(url)
+                        .override(2000, 3000)
+                        .into(object : CustomTarget<File>() {
+                            override fun onLoadCleared(placeholder: Drawable?) {}
+                            override fun onResourceReady(
+                                resource: File,
+                                transition: Transition<in File>?
+                            ) {
+                                stillView.setImage(ImageSource.uri(resource.toUri()))
+                            }
+                        })
+                }
+
                 url.isGifImage() -> {
                     val gifView = PhotoView(layout.context).apply {
                         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)

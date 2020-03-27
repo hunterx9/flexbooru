@@ -26,7 +26,8 @@ class SuggestionRepositoryImpl(private val danbooruApi: DanbooruApi,
                                private val moebooruApi: MoebooruApi,
                                private val danbooruOneApi: DanbooruOneApi,
                                private val gelbooruApi: GelbooruApi,
-                               private val sankakuApi: SankakuApi) : SuggestionRepository {
+                               private val sankakuApi: SankakuApi,
+                               private val idolApi: IdolApi) : SuggestionRepository {
 
     override fun fetchSuggestions(type: Int, search: SearchTag): MutableList<TagBase>? =
         when (type) {
@@ -35,6 +36,7 @@ class SuggestionRepositoryImpl(private val danbooruApi: DanbooruApi,
             Constants.TYPE_DANBOORU_ONE -> fetchDanOneTags(search)
             Constants.TYPE_GELBOORU -> fetchGelTags(search)
             Constants.TYPE_SANKAKU -> fetchSankakuTags(search)
+            Constants.TYPE_IDOL -> fetchIdolTags(search)
             else -> null
         }
 
@@ -73,6 +75,14 @@ class SuggestionRepositoryImpl(private val danbooruApi: DanbooruApi,
     @Suppress("UNCHECKED_CAST")
     private fun fetchSankakuTags(search: SearchTag): MutableList<TagBase>? = try {
         sankakuApi.getTags(SankakuUrlHelper.getTagUrl(search, 1))
+            .execute().body() as? MutableList<TagBase>
+    } catch (_: IOException) {
+        null
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun fetchIdolTags(search: SearchTag): MutableList<TagBase>? = try {
+        idolApi.getTags(IdolUrlHelper.getTagUrl(search, 1))
             .execute().body() as? MutableList<TagBase>
     } catch (_: IOException) {
         null

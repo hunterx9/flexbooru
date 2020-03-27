@@ -37,6 +37,8 @@ class BooruConfigFragment : PreferenceFragmentCompat(),
         private const val BOORU_CONFIG_TYPE_MOEBOORU = "moebooru"
         private const val BOORU_CONFIG_TYPE_GELBOORU = "gelbooru"
         private const val BOORU_CONFIG_TYPE_SANKAKU = "sankaku"
+        private const val BOORU_CONFIG_TYPE_HYDRUS = "hydrus"
+        private const val BOORU_CONFIG_TYPE_IDOL = "idol"
         private const val BOORU_CONFIG_SCHEME_KEY = "booru_config_scheme"
         private const val BOORU_CONFIG_SCHEME_HTTP = "http"
         private const val BOORU_CONFIG_SCHEME_HTTPS = "https"
@@ -77,6 +79,18 @@ class BooruConfigFragment : PreferenceFragmentCompat(),
                     }
                     BOORU_CONFIG_TYPE_SANKAKU
                 }
+                Constants.TYPE_IDOL -> {
+                    if (booru.hashSalt.isNotBlank()) {
+                        hashSalt = booru.hashSalt
+                    }
+                    BOORU_CONFIG_TYPE_IDOL
+                }
+                Constants.TYPE_HYDRUS -> {
+                    if (booru.hashSalt.isNotBlank()) {
+                        hashSalt = booru.hashSalt
+                    }
+                    BOORU_CONFIG_TYPE_HYDRUS
+                }
                 else -> throw IllegalArgumentException("unknown booru type: ${booru.type}")
             }
             sp.edit().apply {
@@ -103,6 +117,8 @@ class BooruConfigFragment : PreferenceFragmentCompat(),
                 BOORU_CONFIG_TYPE_MOEBOORU -> Constants.TYPE_MOEBOORU
                 BOORU_CONFIG_TYPE_DANBOORU_ONE -> Constants.TYPE_DANBOORU_ONE
                 BOORU_CONFIG_TYPE_GELBOORU -> Constants.TYPE_GELBOORU
+                BOORU_CONFIG_TYPE_HYDRUS -> Constants.TYPE_HYDRUS
+                BOORU_CONFIG_TYPE_IDOL -> Constants.TYPE_IDOL
                 else -> Constants.TYPE_SANKAKU
             }
         }
@@ -154,6 +170,12 @@ class BooruConfigFragment : PreferenceFragmentCompat(),
                 BOORU_CONFIG_TYPE_MOEBOORU,
                 BOORU_CONFIG_TYPE_DANBOORU_ONE,
                 BOORU_CONFIG_TYPE_SANKAKU -> {
+                    hashSaltPreferences?.isVisible = true
+                }
+                BOORU_CONFIG_TYPE_IDOL -> {
+                    hashSaltPreferences?.isVisible = true
+                }
+                BOORU_CONFIG_TYPE_HYDRUS -> {
                     hashSaltPreferences?.isVisible = true
                 }
             }

@@ -131,6 +131,26 @@ class InfoBottomSheetDialog : TransparentBottomSheetDialogFragment() {
                         putString(RATING_KEY, post.rating)
                         putInt(SCORE_KEY, post.getPostScore())
                     }
+                    is PostIdol -> bundle.apply {
+                        putInt(POST_TYPE_KEY, Constants.TYPE_IDOL)
+                        putString(USER_NAME_KEY, post.author)
+                        putInt(USER_ID_KEY, post.id)
+                        putString(USER_AVATAR_KEY, post.preview_url)
+                        putString(DATE_KEY, post.getCreatedDate())
+                        putString(SOURCE_KEY, post.file_url)
+                        putString(RATING_KEY, post.rating)
+                        putInt(SCORE_KEY, post.getPostScore())
+                    }
+                    is PostHydrusFileResponse -> bundle.apply {
+                        putInt(POST_TYPE_KEY, Constants.TYPE_HYDRUS)
+                        putString(USER_NAME_KEY, "")
+                        putInt(USER_ID_KEY, 999)
+                        putString(USER_AVATAR_KEY, "")
+                        putString(DATE_KEY, post.getCreatedDate())
+                        putString(SOURCE_KEY, post.source)
+                        putString(RATING_KEY, post.rating)
+                        putInt(SCORE_KEY, post.getPostScore())
+                    }
                     else -> throw IllegalStateException("unknown post type")
                 }
             }

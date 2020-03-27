@@ -24,7 +24,6 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
-import com.android.billingclient.api.*
 import com.bumptech.glide.Glide
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader
 import com.mikepenz.materialdrawer.util.DrawerImageLoader
@@ -69,6 +68,8 @@ class App : Application(), KodeinAware {
         bind() from singleton { MoebooruApi() }
         bind() from singleton { GelbooruApi() }
         bind() from singleton { SankakuApi() }
+        bind() from singleton { IdolApi() }
+        bind() from singleton { HydrusApi() }
         bind() from singleton { Executors.newSingleThreadExecutor() }
         bind() from singleton { TagFilterRepositoryImpl(instance()) }
     }
@@ -98,57 +99,58 @@ class App : Application(), KodeinAware {
         val isGoogleSign = getSignMd5() == "777296a0fe4baa88c783d1cb18bdf1f2"
         Settings.isGoogleSign = isGoogleSign
         DrawerImageLoader.init(drawerImageLoader)
-        if (isGoogleSign) {
-            checkOrderFromCache()
-        } else {
-            val orderId = Settings.orderId
-            if (orderId.isNotEmpty()) {
-                GlobalScope.launch {
-                    OrderApi.orderChecker(orderId, Settings.orderDeviceId)
-                }
-            } else {
-                Settings.isOrderSuccess = false
-            }
-        }
+        Settings.isOrderSuccess = true
+//        if (isGoogleSign) {
+//            checkOrderFromCache()
+//        } else {
+//            val orderId = Settings.orderId
+//            if (orderId.isNotEmpty()) {
+//                GlobalScope.launch {
+//                    OrderApi.orderChecker(orderId, Settings.orderDeviceId)
+//                }
+//            } else {
+//                Settings.isOrderSuccess = false
+//            }
+//        }
     }
 
-    private fun checkOrderFromCache() {
-        val billingClient = BillingClient
-            .newBuilder(this)
-            .enablePendingPurchases()
-            .setListener { _, _ ->
-
-            }
-            .build()
-        billingClient.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(billingResult: BillingResult?) {
-                if (billingClient.isReady) {
-                    val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP).purchasesList
-                    if (purchases != null) {
-                        val index = purchases.indexOfFirst {
-                            it.sku == PurchaseActivity.SKU && it.purchaseState == Purchase.PurchaseState.PURCHASED
-                        }
-                        if (index >= 0) {
-                            val purchase = purchases[index]
-                            if (!purchase.isAcknowledged) {
-                                val ackParams = AcknowledgePurchaseParams.newBuilder()
-                                    .setPurchaseToken(purchase.purchaseToken)
-                                    .build()
-                                billingClient.acknowledgePurchase(ackParams){}
-                            }
-                            Settings.isOrderSuccess = true
-                        } else {
-                            Settings.isOrderSuccess = false
-                        }
-                    } else {
-                        Settings.isOrderSuccess = false
-                    }
-                    billingClient.endConnection()
-                }
-            }
-            override fun onBillingServiceDisconnected() {
-                billingClient.endConnection()
-            }
-        })
-    }
+//    private fun checkOrderFromCache() {
+//        val billingClient = BillingClient
+//            .newBuilder(this)
+//            .enablePendingPurchases()
+//            .setListener { _, _ ->
+//
+//            }
+//            .build()
+//        billingClient.startConnection(object : BillingClientStateListener {
+//            override fun onBillingSetupFinished(billingResult: BillingResult?) {
+//                if (billingClient.isReady) {
+//                    val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP).purchasesList
+//                    if (purchases != null) {
+//                        val index = purchases.indexOfFirst {
+//                            it.sku == PurchaseActivity.SKU && it.purchaseState == Purchase.PurchaseState.PURCHASED
+//                        }
+//                        if (index >= 0) {
+//                            val purchase = purchases[index]
+//                            if (!purchase.isAcknowledged) {
+//                                val ackParams = AcknowledgePurchaseParams.newBuilder()
+//                                    .setPurchaseToken(purchase.purchaseToken)
+//                                    .build()
+//                                billingClient.acknowledgePurchase(ackParams){}
+//                            }
+//                            Settings.isOrderSuccess = true
+//                        } else {
+//                            Settings.isOrderSuccess = false
+//                        }
+//                    } else {
+//                        Settings.isOrderSuccess = false
+//                    }
+//                    billingClient.endConnection()
+//                }
+//            }
+//            override fun onBillingServiceDisconnected() {
+//                billingClient.endConnection()
+//            }
+//        })
+//    }
 }

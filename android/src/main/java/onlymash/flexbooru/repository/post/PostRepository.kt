@@ -52,4 +52,16 @@ interface PostRepository {
         search: Search,
         tagBlacklists: MutableList<TagBlacklist>
     ): Listing<PostSankaku>
+
+    fun getIdolPosts(
+        scope: CoroutineScope,
+        search: Search,
+        tagBlacklists: MutableList<TagBlacklist>
+    ): Listing<PostIdol>
+
+    fun getHydrusPosts(
+        scope: CoroutineScope,
+        search: Search,
+        tagBlacklists: MutableList<TagBlacklist>
+    ): Listing<PostHydrusFileResponse>
 }

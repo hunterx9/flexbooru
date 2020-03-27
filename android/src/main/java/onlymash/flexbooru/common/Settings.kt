@@ -22,6 +22,8 @@ import java.util.*
 
 object Settings {
 
+
+    const val EXPLICIT_MODE_KEY = "settings_explicit_mode"
     const val SAFE_MODE_KEY = "settings_safe_mode"
     const val PAGE_LIMIT_KEY = "settings_page_limit"
     const val MUZEI_LIMIT_KEY = "settings_muzei_limit"
@@ -71,6 +73,11 @@ object Settings {
     var safeMode: Boolean
         get() = sp.getBoolean(SAFE_MODE_KEY, true)
         set(value) = sp.edit().putBoolean(SAFE_MODE_KEY, value).apply()
+
+    var explicitMode: Boolean
+        get() = sp.getBoolean(EXPLICIT_MODE_KEY, true)
+        set(value) = sp.edit().putBoolean(EXPLICIT_MODE_KEY, value).apply()
+
 
     var pageLimit: Int
         get() = sp.getString(PAGE_LIMIT_KEY, "10")!!.toInt()

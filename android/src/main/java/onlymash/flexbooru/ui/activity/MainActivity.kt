@@ -70,6 +70,7 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
         private const val DRAWER_ITEM_ID_PURCHASE = 9L
         private const val DRAWER_ITEM_ID_PURCHASE_POSITION = 7
     }
+
     private lateinit var boorus: MutableList<Booru>
     private lateinit var users: MutableList<User>
     internal var sharedElement: View? = null
@@ -88,14 +89,26 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
             val gestureWidth = resources.getDimensionPixelSize(R.dimen.gesture_exclusion_width)
             val gestureHeight = resources.getDimensionPixelSize(R.dimen.gesture_exclusion_height)
             val gestureOffset = resources.getDimensionPixelSize(R.dimen.gesture_exclusion_offset)
-            window.decorView.systemGestureExclusionRects = listOf(Rect(0, windowHeight - gestureHeight - gestureOffset, gestureWidth, windowHeight - gestureOffset))
+            window.decorView.systemGestureExclusionRects = listOf(
+                Rect(
+                    0,
+                    windowHeight - gestureHeight - gestureOffset,
+                    gestureWidth,
+                    windowHeight - gestureOffset
+                )
+            )
         }
         setContentView(R.layout.activity_main)
         sp.registerOnSharedPreferenceChangeListener(this)
         profileSettingDrawerItem = ProfileSettingDrawerItem().apply {
             name = StringHolder(R.string.title_manage_boorus)
             identifier = HEADER_ITEM_ID_BOORU_MANAGE
-            icon = ImageHolder(AppCompatResources.getDrawable(this@MainActivity, R.drawable.ic_settings_outline_24dp))
+            icon = ImageHolder(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    R.drawable.ic_settings_outline_24dp
+                )
+            )
             isIconTinted = true
         }
         headerView = AccountHeaderView(this).apply {
@@ -111,7 +124,12 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                         Settings.activeBooruUid = uid
                         boorus.forEach {
                             if (it.uid == uid) {
-                                pager_container.adapter = NavPagerAdapter(supportFragmentManager, lifecycle, it, getCurrentUser())
+                                pager_container.adapter = NavPagerAdapter(
+                                    supportFragmentManager,
+                                    lifecycle,
+                                    it,
+                                    getCurrentUser()
+                                )
                                 pager_container.setCurrentItem(currentNavItem, false)
                                 return@forEach
                             }
@@ -125,54 +143,72 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
             addItems(
                 PrimaryDrawerItem().apply {
                     name = StringHolder(R.string.title_account)
-                    icon = ImageHolder(AppCompatResources.getDrawable(
-                        this@MainActivity,
-                        R.drawable.ic_account_circle_outline_24dp))
+                    icon = ImageHolder(
+                        AppCompatResources.getDrawable(
+                            this@MainActivity,
+                            R.drawable.ic_account_circle_outline_24dp
+                        )
+                    )
                     isSelectable = false
                     isIconTinted = true
                     identifier = DRAWER_ITEM_ID_ACCOUNT
                 },
                 PrimaryDrawerItem().apply {
                     name = StringHolder(R.string.title_comments)
-                    icon = ImageHolder(AppCompatResources.getDrawable(
-                        this@MainActivity,
-                        R.drawable.ic_comment_outline_24dp))
+                    icon = ImageHolder(
+                        AppCompatResources.getDrawable(
+                            this@MainActivity,
+                            R.drawable.ic_comment_outline_24dp
+                        )
+                    )
                     isSelectable = false
                     isIconTinted = true
                     identifier = DRAWER_ITEM_ID_COMMENTS
                 },
                 PrimaryDrawerItem().apply {
                     name = StringHolder(R.string.title_tag_blacklist)
-                    icon = ImageHolder(AppCompatResources.getDrawable(
-                        this@MainActivity,
-                        R.drawable.ic_visibility_off_outline_24dp))
+                    icon = ImageHolder(
+                        AppCompatResources.getDrawable(
+                            this@MainActivity,
+                            R.drawable.ic_visibility_off_outline_24dp
+                        )
+                    )
                     isSelectable = false
                     isIconTinted = true
                     identifier = DRAWER_ITEM_ID_TAG_BLACKLIST
                 },
                 PrimaryDrawerItem().apply {
                     name = StringHolder(R.string.title_muzei)
-                    icon = ImageHolder(AppCompatResources.getDrawable(
-                        this@MainActivity,
-                        R.drawable.ic_muzei_24dp))
+                    icon = ImageHolder(
+                        AppCompatResources.getDrawable(
+                            this@MainActivity,
+                            R.drawable.ic_muzei_24dp
+                        )
+                    )
                     isSelectable = false
                     isIconTinted = true
                     identifier = DRAWER_ITEM_ID_MUZEI
                 },
                 PrimaryDrawerItem().apply {
                     name = StringHolder(R.string.title_sauce_nao)
-                    icon = ImageHolder(AppCompatResources.getDrawable(
-                        this@MainActivity,
-                        R.drawable.ic_search_24dp))
+                    icon = ImageHolder(
+                        AppCompatResources.getDrawable(
+                            this@MainActivity,
+                            R.drawable.ic_search_24dp
+                        )
+                    )
                     isSelectable = false
                     isIconTinted = true
                     identifier = DRAWER_ITEM_ID_SAUCE_NAO
                 },
                 PrimaryDrawerItem().apply {
                     name = StringHolder(R.string.title_what_anime)
-                    icon = ImageHolder(AppCompatResources.getDrawable(
-                        this@MainActivity,
-                        R.drawable.ic_youtube_searched_for_24dp))
+                    icon = ImageHolder(
+                        AppCompatResources.getDrawable(
+                            this@MainActivity,
+                            R.drawable.ic_youtube_searched_for_24dp
+                        )
+                    )
                     isSelectable = false
                     isIconTinted = true
                     identifier = DRAWER_ITEM_ID_WHAT_ANIME
@@ -181,16 +217,24 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
             stickyDrawerItems = arrayListOf(
                 PrimaryDrawerItem().apply {
                     name = StringHolder(R.string.title_settings)
-                    icon = ImageHolder(AppCompatResources.getDrawable(
-                        this@MainActivity,
-                        R.drawable.ic_settings_outline_24dp))
+                    icon = ImageHolder(
+                        AppCompatResources.getDrawable(
+                            this@MainActivity,
+                            R.drawable.ic_settings_outline_24dp
+                        )
+                    )
                     isSelectable = false
                     isIconTinted = true
                     identifier = DRAWER_ITEM_ID_SETTINGS
                 },
                 PrimaryDrawerItem().apply {
                     name = StringHolder(R.string.title_about)
-                    icon = ImageHolder(AppCompatResources.getDrawable(this@MainActivity, R.drawable.ic_info_outline_24dp))
+                    icon = ImageHolder(
+                        AppCompatResources.getDrawable(
+                            this@MainActivity,
+                            R.drawable.ic_info_outline_24dp
+                        )
+                    )
                     isSelectable = false
                     isIconTinted = true
                     identifier = DRAWER_ITEM_ID_ABOUT
@@ -206,10 +250,15 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                         val user = getCurrentUser()
                         if (user != null && booru != null) {
                             startActivity(Intent(this@MainActivity, AccountActivity::class.java))
-                        } else if (booru == null){
+                        } else if (booru == null) {
                             startActivity(Intent(this@MainActivity, BooruActivity::class.java))
                         } else {
-                            startActivity(Intent(this@MainActivity, AccountConfigActivity::class.java))
+                            startActivity(
+                                Intent(
+                                    this@MainActivity,
+                                    AccountConfigActivity::class.java
+                                )
+                            )
                         }
                     }
                     DRAWER_ITEM_ID_COMMENTS -> {
@@ -221,7 +270,12 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                     }
                     DRAWER_ITEM_ID_TAG_BLACKLIST -> {
                         if (getCurrentBooru() != null) {
-                            startActivity(Intent(this@MainActivity, TagBlacklistActivity::class.java))
+                            startActivity(
+                                Intent(
+                                    this@MainActivity,
+                                    TagBlacklistActivity::class.java
+                                )
+                            )
                         } else {
                             startActivity(Intent(this@MainActivity, BooruActivity::class.java))
                         }
@@ -233,11 +287,36 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                             startActivity(Intent(this@MainActivity, BooruActivity::class.java))
                         }
                     }
-                    DRAWER_ITEM_ID_SETTINGS -> startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
-                    DRAWER_ITEM_ID_SAUCE_NAO -> startActivity(Intent(this@MainActivity, SauceNaoActivity::class.java))
-                    DRAWER_ITEM_ID_WHAT_ANIME -> startActivity(Intent(this@MainActivity, WhatAnimeActivity::class.java))
-                    DRAWER_ITEM_ID_ABOUT -> startActivity(Intent(this@MainActivity, AboutActivity::class.java))
-                    DRAWER_ITEM_ID_PURCHASE -> startActivity(Intent(this@MainActivity, PurchaseActivity::class.java))
+                    DRAWER_ITEM_ID_SETTINGS -> startActivity(
+                        Intent(
+                            this@MainActivity,
+                            SettingsActivity::class.java
+                        )
+                    )
+                    DRAWER_ITEM_ID_SAUCE_NAO -> startActivity(
+                        Intent(
+                            this@MainActivity,
+                            SauceNaoActivity::class.java
+                        )
+                    )
+                    DRAWER_ITEM_ID_WHAT_ANIME -> startActivity(
+                        Intent(
+                            this@MainActivity,
+                            WhatAnimeActivity::class.java
+                        )
+                    )
+                    DRAWER_ITEM_ID_ABOUT -> startActivity(
+                        Intent(
+                            this@MainActivity,
+                            AboutActivity::class.java
+                        )
+                    )
+                    DRAWER_ITEM_ID_PURCHASE -> startActivity(
+                        Intent(
+                            this@MainActivity,
+                            PurchaseActivity::class.java
+                        )
+                    )
                 }
                 false
             }
@@ -247,9 +326,12 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                 DRAWER_ITEM_ID_PURCHASE_POSITION,
                 PrimaryDrawerItem().apply {
                     name = StringHolder(R.string.purchase_title)
-                    icon = ImageHolder(AppCompatResources.getDrawable(
-                        this@MainActivity,
-                        R.drawable.ic_payment_24dp))
+                    icon = ImageHolder(
+                        AppCompatResources.getDrawable(
+                            this@MainActivity,
+                            R.drawable.ic_payment_24dp
+                        )
+                    )
                     isSelectable = false
                     isIconTinted = true
                     identifier = DRAWER_ITEM_ID_PURCHASE
@@ -268,6 +350,155 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                     type = Constants.TYPE_MOEBOORU
                 )
             )
+            BooruManager.createBooru(
+                Booru(
+                    name = "Hydrus",
+                    scheme = "http",
+                    host = "192.168.100.122",
+                    hashSalt = "067fde0b3e566f5dd4a3874621669e33b710286b0b5d7cd201b414b6541347a4",
+                    type = Constants.TYPE_HYDRUS
+                )
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "IdolComplex",
+                    scheme = "https",
+                    host = "iapi.sankakucomplex.com",
+                    hashSalt = "choujin-steiner--your-password--",
+                    type = Constants.TYPE_IDOL
+                )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "Sankaku",
+                    scheme = "https",
+                    host = "capi-v2.sankakucomplex.com",
+                    hashSalt = "choujin-steiner--your-password--",
+                    type = Constants.TYPE_SANKAKU
+                )
+
+            )
+
+            BooruManager.createBooru(
+                Booru(
+                    name = "safebooru",
+                    scheme = "https",
+                    host = "safebooru.donmai.us",
+                    hashSalt = "",
+                    type = Constants.TYPE_DANBOORU
+                )
+
+            )
+
+            BooruManager.createBooru(
+                Booru(
+                    name = "Danbooru",
+                    scheme = "https",
+                    host = "danbooru.donmai.us",
+                    hashSalt = "onlymash--your-password--",
+                    type = Constants.TYPE_DANBOORU
+                )
+            )
+
+            BooruManager.createBooru(
+                Booru(
+                    name = "rule34.xxx",
+                    scheme = "https",
+                    host = "rule34.xxx",
+                    hashSalt = "",
+                    type = Constants.TYPE_GELBOORU
+                )
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "Gelbooru",
+                    scheme = "https",
+                    host = "gelbooru.com",
+                    hashSalt = "",
+                    type = Constants.TYPE_GELBOORU
+                )
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "e926.net",
+                    scheme = "https",
+                    host = "e926.net",
+                    hashSalt = "--your-password--",
+                    type = Constants.TYPE_DANBOORU_ONE
+                )
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "lolibooru",
+                    scheme = "http",
+                    host = "lolibooru.moe",
+                    hashSalt = "--your-password--",
+                    type = Constants.TYPE_MOEBOORU
+                )
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "3dbooru",
+                    scheme = "http",
+                    host = "behoimi.org",
+                    hashSalt = "meganekko-heaven--your-password--",
+                    type = Constants.TYPE_DANBOORU_ONE
+                )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "hypnohub",
+                    scheme = "https",
+                    host = "hypnohub.net",
+                    hashSalt = "--your-password--",
+                    type = Constants.TYPE_MOEBOORU
+                )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "e621.net",
+                    scheme = "https",
+                    host = "e621.net",
+                    hashSalt = "--your-password--",
+                    type = Constants.TYPE_DANBOORU_ONE
+                )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "yande.re",
+                    scheme = "https",
+                    host = "yande.re",
+                    hashSalt = "choujin-steiner--your-password--",
+                    type = Constants.TYPE_MOEBOORU
+                )
+
+            )
+            BooruManager.createBooru(
+                Booru(
+                    name = "Konachan",
+                    scheme = "https",
+                    host = "konachan.com",
+                    hashSalt = "So-I-Heard-You-Like-Mupkids-?--your-password--",
+                    type = Constants.TYPE_MOEBOORU
+                )
+
+            )
+
+            BooruManager.createBooru(
+                Booru(
+                    name = "Sakugabooru",
+                    scheme = "https",
+                    host = "www.sakugabooru.com",
+                    hashSalt = "er@!\$rjiajd0\$!dkaopc350!Y%)--your-password--",
+                    type = Constants.TYPE_MOEBOORU
+                )
+
+            )
+
         }
         boorus = BooruManager.getAllBoorus() ?: mutableListOf()
         users = UserManager.getAllUsers() ?: mutableListOf()
@@ -282,27 +513,27 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
         GlobalScope.launch {
             AppUpdaterApi.checkUpdate()
         }
-        if (BuildConfig.VERSION_CODE < Settings.latestVersionCode) {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.update_found_update)
-                .setMessage(getString(R.string.update_version, Settings.latestVersionName))
-                .setPositiveButton(R.string.dialog_update) { _, _ ->
-                    if (Settings.isGoogleSign && Settings.isAvailableOnStore) {
-                        openAppInMarket(applicationContext.packageName)
-                    } else {
-                        launchUrl(Settings.latestVersionUrl)
-                    }
-                    finish()
-                }
-                .setNegativeButton(R.string.dialog_exit) { _, _ ->
-                    finish()
-                }
-                .create().apply {
-                    setCancelable(false)
-                    setCanceledOnTouchOutside(false)
-                    show()
-                }
-        }
+//        if (BuildConfig.VERSION_CODE < Settings.latestVersionCode) {
+//            AlertDialog.Builder(this)
+//                .setTitle(R.string.update_found_update)
+//                .setMessage(getString(R.string.update_version, Settings.latestVersionName))
+//                .setPositiveButton(R.string.dialog_update) { _, _ ->
+//                    if (Settings.isGoogleSign && Settings.isAvailableOnStore) {
+//                        openAppInMarket(applicationContext.packageName)
+//                    } else {
+//                        launchUrl(Settings.latestVersionUrl)
+//                    }
+//                    finish()
+//                }
+//                .setNegativeButton(R.string.dialog_exit) { _, _ ->
+//                    finish()
+//                }
+//                .create().apply {
+//                    setCancelable(false)
+//                    setCanceledOnTouchOutside(false)
+//                    show()
+//                }
+//        }
     }
 
     private fun initDrawerHeader() {
@@ -324,9 +555,17 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
             }
             headerView.addProfile(
                 ProfileDrawerItem().apply {
-                    icon = ImageHolder(Uri.parse(String.format("%s://%s/favicon.ico", booru.scheme, host)))
-                    name = StringHolder(booru.name)
-                    description = StringHolder(String.format("%s://%s", booru.scheme, booru.host))
+                    icon = ImageHolder(
+                        Uri.parse(
+                            String.format(
+                                "%s://%s/favicon.ico",
+                                booru.scheme,
+                                host
+                            )
+                        )
+                    )
+                    name = StringHolder(String.format("%s://%s", booru.scheme, booru.host))
+                    description = StringHolder(booru.name)
                     identifier = booru.uid
                 },
                 index
@@ -346,7 +585,8 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
             booru = boorus[i]
         }
         headerView.setActiveProfile(uid)
-        pager_container.adapter = NavPagerAdapter(supportFragmentManager, lifecycle, booru, getCurrentUser())
+        pager_container.adapter =
+            NavPagerAdapter(supportFragmentManager, lifecycle, booru, getCurrentUser())
     }
 
     private val booruListener = object : BooruManager.Listener {
@@ -361,7 +601,8 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
         override fun onAdd(booru: Booru) {
             boorus.add(booru)
             if (!Settings.isOrderSuccess &&
-                headerView.profiles?.size ?: 0 == BOORUS_LIMIT + 1) {
+                headerView.profiles?.size ?: 0 == BOORUS_LIMIT + 1
+            ) {
                 return
             }
             initDrawerHeader()
@@ -376,7 +617,8 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                     val booru = boorus[0]
                     Settings.activeBooruUid = booru.uid
                     headerView.setActiveProfile(booru.uid)
-                    pager_container.adapter = NavPagerAdapter(supportFragmentManager, lifecycle, booru, getCurrentUser())
+                    pager_container.adapter =
+                        NavPagerAdapter(supportFragmentManager, lifecycle, booru, getCurrentUser())
                 }
             } else {
                 Settings.activeBooruUid = -1
@@ -393,16 +635,30 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                     it.hashSalt = booru.hashSalt
                     it.type = booru.type
                     if (Settings.activeBooruUid == booru.uid) {
-                        pager_container.adapter = NavPagerAdapter(supportFragmentManager, lifecycle, booru, getCurrentUser())
+                        pager_container.adapter = NavPagerAdapter(
+                            supportFragmentManager,
+                            lifecycle,
+                            booru,
+                            getCurrentUser()
+                        )
                     }
                     return@forEach
                 }
             }
             var host = booru.host
-            if (booru.type == Constants.TYPE_SANKAKU && host.startsWith("capi-v2.")) host = host.replaceFirst("capi-v2.", "beta.")
+            if (booru.type == Constants.TYPE_SANKAKU && host.startsWith("capi-v2.")) host =
+                host.replaceFirst("capi-v2.", "beta.")
             headerView.updateProfile(
                 ProfileDrawerItem().apply {
-                    icon = ImageHolder(Uri.parse(String.format("%s://%s/favicon.ico", booru.scheme, host)))
+                    icon = ImageHolder(
+                        Uri.parse(
+                            String.format(
+                                "%s://%s/favicon.ico",
+                                booru.scheme,
+                                host
+                            )
+                        )
+                    )
                     name = StringHolder(booru.name)
                     description = StringHolder(String.format("%s://%s", booru.scheme, booru.host))
                     identifier = booru.uid
@@ -411,7 +667,7 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
         }
     }
 
-    private val userListener =  object : UserManager.Listener {
+    private val userListener = object : UserManager.Listener {
         override fun onAdd(user: User) {
             users.add(user)
         }
@@ -444,7 +700,10 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
     }
 
     private val sharedElementCallback = object : SharedElementCallback() {
-        override fun onMapSharedElements(names: MutableList<String>?, sharedElements: MutableMap<String, View>?) {
+        override fun onMapSharedElements(
+            names: MutableList<String>?,
+            sharedElements: MutableMap<String, View>?
+        ) {
             if (names == null || sharedElements == null) return
             names.clear()
             sharedElements.clear()
@@ -493,7 +752,7 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
     private fun onNavPosition(position: Int) {
         if (pager_container.currentItem != position) {
             pager_container.setCurrentItem(position, false)
-        } else if (currentNavItem == position){
+        } else if (currentNavItem == position) {
             navigationListeners.forEach {
                 it.onClickPosition(position)
             }
@@ -526,7 +785,7 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                 }
             }
             false
-    }
+        }
 
     private var navigationListeners: MutableList<NavigationListener> = mutableListOf()
 
@@ -581,7 +840,8 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
             Settings.GRID_WIDTH_KEY,
             Settings.SHOW_INFO_BAR_KEY -> {
                 val booru = getCurrentBooru() ?: return
-                pager_container.adapter = NavPagerAdapter(supportFragmentManager, lifecycle, booru, getCurrentUser())
+                pager_container.adapter =
+                    NavPagerAdapter(supportFragmentManager, lifecycle, booru, getCurrentUser())
                 pager_container.setCurrentItem(currentNavItem, false)
             }
             Settings.ORDER_SUCCESS_KEY -> {
@@ -593,9 +853,12 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
                             DRAWER_ITEM_ID_PURCHASE_POSITION,
                             PrimaryDrawerItem().apply {
                                 name = StringHolder(R.string.purchase_title)
-                                icon = ImageHolder(AppCompatResources.getDrawable(
-                                    this@MainActivity,
-                                    R.drawable.ic_payment_24dp))
+                                icon = ImageHolder(
+                                    AppCompatResources.getDrawable(
+                                        this@MainActivity,
+                                        R.drawable.ic_payment_24dp
+                                    )
+                                )
                                 isSelectable = false
                                 isIconTinted = true
                                 identifier = DRAWER_ITEM_ID_PURCHASE
@@ -612,7 +875,9 @@ class MainActivity : PostActivity(), SharedPreferences.OnSharedPreferenceChangeL
 
     override fun onBackPressed() {
         when {
-            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(GravityCompat.START)
+            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(
+                GravityCompat.START
+            )
             currentNavItem != 0 -> pager_container.setCurrentItem(0, false)
             else -> super.onBackPressed()
         }

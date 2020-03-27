@@ -54,6 +54,8 @@ abstract class ListFragment : Fragment(), KodeinAware {
     internal val moeApi: MoebooruApi by instance()
     internal val gelApi: GelbooruApi by instance()
     internal val sankakuApi: SankakuApi by instance()
+    internal val idolApi: IdolApi by instance()
+    internal val hydrusApi: HydrusApi by instance()
     internal val ioExecutor: Executor by instance()
 
     internal lateinit var searchBar: SearchBar
@@ -77,7 +79,8 @@ abstract class ListFragment : Fragment(), KodeinAware {
                 moebooruApi = moeApi,
                 danbooruOneApi = danOneApi,
                 gelbooruApi = gelApi,
-                sankakuApi = sankakuApi
+                sankakuApi = sankakuApi,
+                idolApi = idolApi
             )
         )
     }

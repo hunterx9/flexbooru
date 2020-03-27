@@ -122,10 +122,10 @@ class BooruActivity : BaseActivity() {
     }
 
     private fun backupToFile() {
-        if (!Settings.isOrderSuccess) {
-            startActivity(Intent(this, PurchaseActivity::class.java))
-            return
-        }
+//        if (!Settings.isOrderSuccess) {
+//            startActivity(Intent(this, PurchaseActivity::class.java))
+//            return
+//        }
         val intent = Intent().apply {
             action = Intent.ACTION_CREATE_DOCUMENT
             addCategory(Intent.CATEGORY_OPENABLE)
