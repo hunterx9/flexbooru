@@ -388,6 +388,7 @@ class BrowseActivity : BaseActivity() {
         pagerAdapter.setPhotoViewListener(photoViewListener)
         pager_browse.adapter = pagerAdapter
         pager_browse.registerOnPageChangeCallback(pagerChangeCallback)
+        pager_browse.offscreenPageLimit = 5
         lifecycleScope.launch {
             val data = withContext(Dispatchers.IO) {
                 postLoader.loadPosts(

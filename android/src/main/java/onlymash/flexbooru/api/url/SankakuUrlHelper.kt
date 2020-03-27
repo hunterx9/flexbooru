@@ -87,7 +87,7 @@ object SankakuUrlHelper {
             .addQueryParameter("order", search.order)
             .addQueryParameter("type", search.type)
             .addQueryParameter("limit", search.limit.toString())
-            .addQueryParameter("page", page.toString())
+            .addQueryParameter("page", (page-1).toString())
             .addQueryParameter("login", search.username)
             .addQueryParameter("password_hash", search.auth_key)
             .addQueryParameter("commit", "Search")

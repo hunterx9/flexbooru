@@ -102,7 +102,7 @@ object DanUrlHelper {
             .addQueryParameter("search[category]", search.type)
             .addQueryParameter("search[hide_empty]", "yes")
             .addQueryParameter("limit", search.limit.toString())
-            .addQueryParameter("page", page.toString())
+            .addQueryParameter("page", (page-1).toString())
             .addQueryParameter("login", search.username)
             .addQueryParameter("api_key", search.auth_key)
             .addQueryParameter("commit", "Search")

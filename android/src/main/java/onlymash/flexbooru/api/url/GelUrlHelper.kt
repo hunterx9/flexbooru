@@ -49,7 +49,7 @@ object GelUrlHelper {
             .addQueryParameter("q", "index")
             .addQueryParameter("name_pattern", search.name)
             .addQueryParameter("limit", search.limit.toString())
-            .addQueryParameter("pid", page.toString())
+            .addQueryParameter("pid", (page-1).toString())
             .addQueryParameter("orderby", search.order)
             .build()
     }
