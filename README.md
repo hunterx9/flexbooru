@@ -10,6 +10,10 @@ This is my mod on flexbooru and all the changes in my build is listed below:
 8. added play button for gif and video
     - gif play btn for saving bandwidth
     - video play btn that shows preview instead of blank as vid loads
+Update:
+- refractor changes from main dev change drawer header name from host to booru name -2020 March 23
+- you can add tag blacklist from the image detail when tags are list on bottom sheet on press (-)
+- chain multiple tags from bottom sheet in image detail on press (+)
 A booru client for Android, support [Danbooru](https://github.com/r888888888/danbooru), [Moebooru](https://github.com/moebooru/moebooru), Gelbooru, Sankaku, etc.
 
 [![Telegram](https://img.shields.io/badge/chat-Telegram-blue.svg)](https://t.me/flexbooru)
@@ -23,7 +27,7 @@ A booru client for Android, support [Danbooru](https://github.com/r888888888/dan
 ## Translate
 Click on this [link](https://crowdin.com/project/flexbooru) and you can translate this app into your language.
 
-## Downlad
+## Download
 <a href="https://play.google.com/store/apps/details?id=onlymash.flexbooru.play"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="48"></a>
 
 ## Screenshot
