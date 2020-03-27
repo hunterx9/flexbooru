@@ -18,13 +18,22 @@ package onlymash.flexbooru.ui.fragment
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.toolbar.*
 import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.R
 import onlymash.flexbooru.common.Settings
+import onlymash.flexbooru.database.TagBlacklistManager
+import onlymash.flexbooru.entity.common.TagBlacklist
 import onlymash.flexbooru.entity.common.TagFilter
 import onlymash.flexbooru.entity.post.*
 import onlymash.flexbooru.ui.activity.SearchActivity
@@ -46,8 +55,9 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
         private const val TAG_GENRE_KEY = "genre"
         private const val TAG_MEDIUM_KEY = "medium"
         private const val TAG_STUDIO_KEY = "studio"
+        private const val KEYWORD = "key"
 
-        fun create(post: Any?): TagBottomSheetDialog {
+        fun create(post: Any?, keyword: String?): TagBottomSheetDialog {
             return TagBottomSheetDialog().apply {
                 arguments = when (post) {
                     is PostDan -> {
@@ -58,24 +68,28 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
                             putString(TAG_COPYRIGHT_KEY, post.tagStringCopyright)
                             putString(TAG_CHARACTER_KEY, post.tagStringCharacter)
                             putString(TAG_META_KEY, post.tagStringMeta)
+                            putString(KEYWORD, keyword)
                         }
                     }
                     is PostMoe -> {
                         Bundle().apply {
                             putInt(POST_TYPE, Constants.TYPE_MOEBOORU)
                             putString(TAG_ALL_KEY, post.tags)
+                            putString(KEYWORD, keyword)
                         }
                     }
                     is PostDanOne -> {
                         Bundle().apply {
                             putInt(POST_TYPE, Constants.TYPE_DANBOORU_ONE)
                             putString(TAG_ALL_KEY, post.tags)
+                            putString(KEYWORD, keyword)
                         }
                     }
                     is PostGel -> {
                         Bundle().apply {
                             putInt(POST_TYPE, Constants.TYPE_GELBOORU)
                             putString(TAG_ALL_KEY, post.tags)
+                            putString(KEYWORD, keyword)
                         }
                     }
                     is PostSankaku -> {
@@ -89,12 +103,14 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
                             putString(TAG_GENRE_KEY, post.getTagString(5))
                             putString(TAG_MEDIUM_KEY, post.getTagString(8))
                             putString(TAG_META_KEY, post.getTagString(9))
+                            putString(KEYWORD, keyword)
                         }
                     }
                     else -> null
                 }
             }
         }
+
         private fun PostSankaku.getTagString(type: Int): String {
             var tag = ""
             tags.forEach {
@@ -106,6 +122,7 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
         }
     }
 
+    private var keyword: String = ""
     private lateinit var behavior: BottomSheetBehavior<View>
     private var tags: MutableList<TagFilter> = mutableListOf()
     private val itemListener = object : TagBrowseViewHolder.ItemListener {
@@ -113,6 +130,42 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
             SearchActivity.startActivity(requireContext(), keyword)
             dismissAllowingStateLoss()
         }
+
+        override fun onIncludeClickItem(keyword: String) {
+            SearchActivity.startActivity(requireContext(), keyword)
+        }
+
+        override fun onExcludeClickItem(booruUid: Long, keyword: String) {
+            val padding = resources.getDimensionPixelSize(R.dimen.spacing_mlarge)
+            val layout = FrameLayout(requireContext()).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                setPadding(padding, padding / 2, padding, 0)
+            }
+
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Add to blacklist tag for $keyword ?")
+                .setView(layout)
+                .setPositiveButton(R.string.dialog_yes) { _, _ ->
+
+
+                    TagBlacklistManager.createTagBlacklist(
+                        TagBlacklist(
+                            booruUid = booruUid,
+                            tag = keyword
+                        )
+                    )
+                    Toast.makeText(requireContext(),"Success", Toast.LENGTH_SHORT).show()
+
+                }
+                .setNegativeButton(R.string.dialog_no, null)
+                .create()
+                .show()
+        }
+
     }
 
     private var postType = -1
@@ -126,6 +179,7 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
             return
         }
         postType = arg.getInt(POST_TYPE)
+        keyword = arg.getString(KEYWORD)!!
         when (postType) {
             Constants.TYPE_DANBOORU -> {
                 arg.apply {
@@ -189,7 +243,7 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
             Constants.TYPE_MOEBOORU,
             Constants.TYPE_DANBOORU_ONE,
             Constants.TYPE_GELBOORU -> {
-                arg.getString(TAG_ALL_KEY)?.trim()?.split(" ")?.forEach {  tag ->
+                arg.getString(TAG_ALL_KEY)?.trim()?.split(" ")?.forEach { tag ->
                     if (tag.isNotEmpty()) tags.add(
                         TagFilter(
                             booruUid = booruUid,
@@ -292,12 +346,13 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
             }
         }
     }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         val view = View.inflate(requireContext(), R.layout.fragment_bottom_sheet_tag, null)
         view.findViewById<RecyclerView>(R.id.tags_list).apply {
             layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
-            adapter = TagBrowseAdapter(tags, postType, itemListener)
+            adapter = TagBrowseAdapter(tags, postType, itemListener, keyword)
         }
         view.findViewById<Toolbar>(R.id.toolbar).apply {
             setTitle(R.string.title_tags)
@@ -311,6 +366,7 @@ class TagBottomSheetDialog : TransparentBottomSheetDialogFragment() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
 
             }
+
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                     dismiss()

@@ -410,7 +410,7 @@ class BrowseActivity : BaseActivity() {
 
     private fun initBottomBar() {
         post_tags.setOnClickListener {
-            TagBottomSheetDialog.create(getCurrentPost()).show(supportFragmentManager, "tags")
+            TagBottomSheetDialog.create(getCurrentPost(), keyword).show(supportFragmentManager, "tags")
         }
         post_info.setOnClickListener {
             InfoBottomSheetDialog.create(getCurrentPost()).show(supportFragmentManager, "info")

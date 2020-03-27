@@ -47,6 +47,7 @@ import onlymash.flexbooru.entity.post.*
 import onlymash.flexbooru.entity.tag.SearchTag
 import onlymash.flexbooru.extension.getViewModel
 import onlymash.flexbooru.extension.gridWidth
+import onlymash.flexbooru.extension.removeWord
 import onlymash.flexbooru.extension.rotate
 import onlymash.flexbooru.glide.GlideApp
 import onlymash.flexbooru.glide.GlideRequests
@@ -438,8 +439,11 @@ class PostFragment : ListFragment(),
             limit = 20,
             type = ""
         )
-        if (Settings.safeMode) {
+        if (Settings.safeMode && !Settings.explicitMode) {
             search.keyword = "rating:safe ${search.keyword}"
+        } else if (!Settings.safeMode && Settings.explicitMode) {
+            var keyword = search.keyword.removeWord(search.keyword, "rating:explicit")
+            search.keyword = "rating:explicit ${keyword?.trim()}"
         }
         viewTransition = ViewTransition(swipe_refresh, search_layout)
         if (requireActivity() !is MainActivity) {

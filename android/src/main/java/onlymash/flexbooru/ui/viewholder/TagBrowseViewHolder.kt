@@ -26,7 +26,9 @@ import androidx.recyclerview.widget.RecyclerView
 import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.R
 import onlymash.flexbooru.common.Settings
+import onlymash.flexbooru.database.TagBlacklistManager
 import onlymash.flexbooru.database.TagFilterManager
+import onlymash.flexbooru.entity.common.TagBlacklist
 import onlymash.flexbooru.entity.common.TagFilter
 import onlymash.flexbooru.extension.copyText
 
@@ -44,6 +46,7 @@ class TagBrowseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val tagInclude: AppCompatImageView = itemView.findViewById(R.id.tag_include)
 
     private var type = -1
+    private var keywords = ""
 
     private var itemListener: ItemListener? = null
 
@@ -53,6 +56,8 @@ class TagBrowseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     interface ItemListener {
         fun onClickItem(keyword: String)
+        fun onIncludeClickItem(keyword: String)
+        fun onExcludeClickItem(booruUid:Long,keyword: String)
     }
 
     init {
@@ -75,6 +80,9 @@ class TagBrowseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                     type = type
                 )
             )
+
+
+            itemListener?.onExcludeClickItem(booruUid,tagName.text.toString())
         }
         tagInclude.setOnClickListener {
             val name = tagName.text?:return@setOnClickListener
@@ -86,12 +94,18 @@ class TagBrowseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                     type = type
                 )
             )
+            itemListener?.onIncludeClickItem("${keywords} ${tagName.text.toString()}")
         }
     }
 
-    fun bind(tag: TagFilter, postType: Int) {
+    fun bind(
+        tag: TagFilter,
+        postType: Int,
+        keyword: String
+    ) {
         tagName.text = tag.name
         type = tag.type
+        keywords = keyword
         when (postType) {
             Constants.TYPE_DANBOORU -> {
                 when (type) {

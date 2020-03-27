@@ -206,3 +206,28 @@ fun String.isWebp(): Boolean = fileExt() == "webp"
 fun Uri.toDecodedString(): String = toString().toDecodedString()
 
 fun String.toDecodedString(): String = Uri.decode(this)
+
+fun String.removeWord(string: String, word: String): String? {
+
+    // Check if the word is present in string
+    // If found, remove it using removeAll()
+    var string = string
+    if (string.contains(word)) {
+
+        // To cover the case
+        // if the word is at the
+        // beginning of the string
+        // or anywhere in the middle
+        var tempWord = "$word "
+        string = string.replace(tempWord.toRegex(), "")
+
+        // To cover the edge case
+        // if the word is at the
+        // end of the string
+        tempWord = " $word"
+        string = string.replace(tempWord.toRegex(), "")
+    }
+
+    // Return the resultant string
+    return string
+}
