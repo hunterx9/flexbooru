@@ -25,17 +25,17 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.refreshable_list.*
-import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.R
+import onlymash.flexbooru.common.Constants
 import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.database.UserManager
 import onlymash.flexbooru.entity.common.Booru
-import onlymash.flexbooru.entity.tag.SearchTag
 import onlymash.flexbooru.entity.common.User
+import onlymash.flexbooru.entity.tag.SearchTag
 import onlymash.flexbooru.entity.tag.TagBase
 import onlymash.flexbooru.repository.NetworkState
-import onlymash.flexbooru.repository.tag.TagRepositoryImpl
 import onlymash.flexbooru.repository.tag.TagRepository
+import onlymash.flexbooru.repository.tag.TagRepositoryImpl
 import onlymash.flexbooru.ui.activity.MainActivity
 import onlymash.flexbooru.ui.activity.SearchActivity
 import onlymash.flexbooru.ui.adapter.TagAdapter
@@ -210,6 +210,11 @@ class TagFragment : ListFragment() {
                 tagViewModel.show(search)
                 tagViewModel.refreshSankaku()
             }
+            Constants.TYPE_IDOL -> {
+                swipe_refresh.isRefreshing = true
+                tagViewModel.show(search)
+                tagViewModel.refreshIdol()
+            }
         }
     }
 
@@ -354,6 +359,7 @@ class TagFragment : ListFragment() {
                 moebooruApi = moeApi,
                 gelbooruApi = gelApi,
                 sankakuApi = sankakuApi,
+                idolApi = idolApi,
                 networkExecutor = ioExecutor
             )
         )
@@ -421,6 +427,17 @@ class TagFragment : ListFragment() {
                 })
                 initSwipeToRefreshSankaku()
             }
+            Constants.TYPE_IDOL -> {
+                searchBar.setMenu(R.menu.tag_sankaku, requireActivity().menuInflater)
+                tagViewModel.tagsIdol.observe(this, Observer { tags ->
+                    @Suppress("UNCHECKED_CAST")
+                    tagAdapter.submitList(tags as PagedList<TagBase>)
+                })
+                tagViewModel.networkStateIdol.observe(this, Observer { networkState ->
+                    tagAdapter.setNetworkState(networkState)
+                })
+                initSwipeToRefreshIdol()
+            }
         }
         tagViewModel.show(search = search)
         UserManager.listeners.add(userListener)
@@ -434,6 +451,7 @@ class TagFragment : ListFragment() {
             Constants.TYPE_DANBOORU_ONE -> tagViewModel.retryDanOne()
             Constants.TYPE_GELBOORU -> tagViewModel.retryGel()
             Constants.TYPE_SANKAKU -> tagViewModel.retrySankaku()
+            Constants.TYPE_IDOL -> tagViewModel.retryIdol()
         }
     }
 
@@ -480,6 +498,15 @@ class TagFragment : ListFragment() {
             }
         })
         swipe_refresh.setOnRefreshListener { tagViewModel.refreshSankaku() }
+    }
+
+    private fun initSwipeToRefreshIdol() {
+        tagViewModel.refreshStateIdol.observe(this, Observer<NetworkState> {
+            if (it != NetworkState.LOADING) {
+                swipe_refresh.isRefreshing = false
+            }
+        })
+        swipe_refresh.setOnRefreshListener { tagViewModel.refreshIdol() }
     }
 
     @Suppress("UNCHECKED_CAST")

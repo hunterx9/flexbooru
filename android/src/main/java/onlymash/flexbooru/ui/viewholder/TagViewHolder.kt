@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.recyclerview.widget.RecyclerView
 import onlymash.flexbooru.R
+import onlymash.flexbooru.entity.common.TagIdol
 import onlymash.flexbooru.entity.tag.*
 import onlymash.flexbooru.extension.copyText
 
@@ -129,6 +130,21 @@ class TagViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                 count.text = data.count.toString()
             }
             is TagSankaku -> {
+                tagName.text = data.name
+                tagType.text = when (data.type) {
+                    GENERAL -> res.getString(R.string.tag_type_general)
+                    ARTIST -> res.getString(R.string.tag_type_artist)
+                    COPYRIGHT -> res.getString(R.string.tag_type_copyright)
+                    CHARACTER -> res.getString(R.string.tag_type_character)
+                    MEDIUM -> res.getString(R.string.tag_type_medium)
+                    META_SANKAKU -> res.getString(R.string.tag_type_meta)
+                    STUDIO -> res.getString(R.string.tag_type_studio)
+                    GENRE -> res.getString(R.string.tag_type_genre)
+                    else -> res.getString(R.string.tag_type_unknown)
+                }
+                count.text = data.count.toString()
+            }
+            is TagIdol -> {
                 tagName.text = data.name
                 tagType.text = when (data.type) {
                     GENERAL -> res.getString(R.string.tag_type_general)

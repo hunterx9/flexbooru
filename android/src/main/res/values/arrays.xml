@@ -33,6 +33,8 @@
         <item>@string/booru_type_danbooru_one</item>
         <item>@string/booru_type_gelbooru</item>
         <item>@string/booru_type_sankaku</item>
+        <item>@string/booru_type_hydrus</item>
+        <item>@string/booru_type_idol</item>
     </string-array>
     <string-array name="booru_type_entries_values">
         <item>danbooru</item>
@@ -40,6 +42,8 @@
         <item>danbooru_one</item>
         <item>gelbooru</item>
         <item>sankaku</item>
+        <item>hydrus</item>
+        <item>idol</item>
     </string-array>
     <string-array name="booru_scheme_entries">
         <item>@string/booru_config_scheme_http</item>

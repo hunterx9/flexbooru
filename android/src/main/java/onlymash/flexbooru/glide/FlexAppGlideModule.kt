@@ -59,6 +59,7 @@ class FlexAppGlideModule : AppGlideModule() {
             val scheme = url.scheme
             var host = url.host
             if (host.startsWith("cs.")) host = host.replaceFirst("cs.", "beta.")
+            if (host.startsWith("is.")) host = host.replaceFirst("is.", "beta.")
             val builder = it.request()
                 .newBuilder()
                 .addHeader(HttpHeaders.Referrer, "$scheme://$host/post")

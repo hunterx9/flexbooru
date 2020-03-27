@@ -31,8 +31,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.refreshable_list.*
 import onlymash.flexbooru.R
-import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.api.*
+import onlymash.flexbooru.common.Settings
 import onlymash.flexbooru.entity.tag.SearchTag
 import onlymash.flexbooru.repository.suggestion.SuggestionRepository
 import onlymash.flexbooru.repository.suggestion.SuggestionRepositoryImpl

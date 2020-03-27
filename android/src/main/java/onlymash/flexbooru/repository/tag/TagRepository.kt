@@ -15,6 +15,7 @@
 
 package onlymash.flexbooru.repository.tag
 
+import onlymash.flexbooru.entity.common.TagIdol
 import onlymash.flexbooru.entity.tag.*
 import onlymash.flexbooru.repository.Listing
 
@@ -24,4 +25,5 @@ interface TagRepository {
     fun getDanOneTags(search: SearchTag): Listing<TagDanOne>
     fun getGelTags(search: SearchTag): Listing<TagGel>
     fun getSankakuTags(search: SearchTag): Listing<TagSankaku>
+    fun getIdolTags(search: SearchTag): Listing<TagIdol>
 }

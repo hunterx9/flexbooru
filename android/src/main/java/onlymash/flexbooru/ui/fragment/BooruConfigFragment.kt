@@ -19,9 +19,9 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import onlymash.flexbooru.R
 import onlymash.flexbooru.common.App
 import onlymash.flexbooru.common.Constants
-import onlymash.flexbooru.R
 import onlymash.flexbooru.entity.common.Booru
 import org.kodein.di.erased.instance
 
@@ -100,6 +100,7 @@ class BooruConfigFragment : PreferenceFragmentCompat(),
                 putString(BOORU_CONFIG_HOST_KEY, booru.host)
                 putString(BOORU_CONFIG_HASH_SALT_KEY, hashSalt)
             }.apply()
+            getHashSalt(sp)
         }
         fun get(): Booru {
             return Booru(
@@ -156,6 +157,9 @@ class BooruConfigFragment : PreferenceFragmentCompat(),
             BOORU_CONFIG_TYPE_DANBOORU,
             BOORU_CONFIG_TYPE_GELBOORU -> {
                 hashSaltPreferences?.isVisible = false
+            }
+            BOORU_CONFIG_TYPE_HYDRUS -> {
+                hashSaltPreferences?.isVisible = true
             }
         }
     }
