@@ -493,7 +493,7 @@ class MainActivity : PathActivity(), SharedPreferences.OnSharedPreferenceChangeL
                 name = "Dante's Archive",
                 scheme = "https",
                 host = "cow.zone",
-                hashSalt = "er@!\$rjiajd0\$!dkaopc350!Y%)--your-password--",
+                path = "shimmie2",
                 type = BOORU_TYPE_SHIMMIE
             )
 
