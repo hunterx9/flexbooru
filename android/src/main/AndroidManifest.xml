@@ -125,22 +125,22 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_provider_paths"/>
+                android:resource="@xml/file_provider_paths" />
         </provider>
 
-        <receiver android:name=".receiver.DownloadNotificationClickReceiver"/>
+        <receiver android:name=".receiver.DownloadNotificationClickReceiver" />
 
-        <meta-data
-            android:name="com.google.android.backup.api_key"
-            android:value="${backupApiKey}"/>
+        <!--        <meta-data-->
+        <!--            android:name="com.google.android.backup.api_key"-->
+        <!--            android:value="${backupApiKey}"/>-->
 
         <uses-library
             android:name="org.apache.http.legacy"
-            android:required="false"/>
+            android:required="false" />
 
         <activity
             android:name="com.google.android.play.core.missingsplits.PlayCoreMissingSplitsActivity"
-            tools:node="remove"/>
+            tools:node="remove" />
         <activity
             android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
             tools:node="remove"/>

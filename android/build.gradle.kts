@@ -16,7 +16,6 @@
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import org.apache.commons.io.output.ByteArrayOutputStream
 import org.jetbrains.kotlin.config.KotlinCompilerVersion
-import org.jetbrains.kotlin.konan.properties.Properties
 
 plugins {
     id("com.android.application")
@@ -24,18 +23,18 @@ plugins {
     kotlin("android.extensions")
     kotlin("kapt")
     kotlin("plugin.serialization")
-    id("com.google.android.gms.oss-licenses-plugin")
-    id("com.google.gms.google-services")
-    id("io.fabric")
+//    id("com.google.android.gms.oss-licenses-plugin")
+//    id("com.google.gms.google-services")
+//    id("io.fabric")
 }
 
-val releaseStoreFile = file("../.gradle/flexbooru_play.jks")
-val storePropertyFile = file("../.gradle/keystore.properties")
+//val releaseStoreFile = file("../.gradle/flexbooru_play.jks")
+//val storePropertyFile = file("../.gradle/keystore.properties")
 
-val properties = Properties()
-if (storePropertyFile.exists()) {
-    properties.load(storePropertyFile.inputStream())
-}
+//val properties = Properties()
+//if (storePropertyFile.exists()) {
+//    properties.load(storePropertyFile.inputStream())
+//}
 val byteOut = ByteArrayOutputStream()
 project.exec {
     commandLine = "git rev-list HEAD --first-parent --count".split(" ")
@@ -44,16 +43,16 @@ project.exec {
 val verCode = String(byteOut.toByteArray()).trim().toInt()
 
 android {
-    signingConfigs {
-        if (storePropertyFile.exists() && releaseStoreFile.exists()) {
-            create("release") {
-                storeFile = releaseStoreFile
-                keyAlias = properties.getProperty("KEY_ALIAS")
-                keyPassword = properties.getProperty("KEY_PASS")
-                storePassword = properties.getProperty("STORE_PASS")
-            }
-        }
-    }
+//    signingConfigs {
+//        if (storePropertyFile.exists() && releaseStoreFile.exists()) {
+//            create("release") {
+//                storeFile = releaseStoreFile
+//                keyAlias = properties.getProperty("KEY_ALIAS")
+//                keyPassword = properties.getProperty("KEY_PASS")
+//                storePassword = properties.getProperty("STORE_PASS")
+//            }
+//        }
+//    }
     compileSdkVersion(29)
     buildToolsVersion = "29.0.3"
     defaultConfig {
@@ -65,7 +64,7 @@ android {
         versionNameSuffix = ".c$verCode"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders = mapOf("backupApiKey" to "AEdPqrEAAAAICNAmVRgkNfsB1ObTK7LGamWWT5FMDLiGqhIcyw")
+//        manifestPlaceholders = mapOf("backupApiKey" to "AEdPqrEAAAAICNAmVRgkNfsB1ObTK7LGamWWT5FMDLiGqhIcyw")
         resConfigs(listOf("en", "zh-rCN", "zh-rHK", "zh-rTW", "nl-rNL",
             "pt-rBR", "es-rES", "pl-rPL", "fr-rFR", "hu-rHU", "ru-rRU",
             "ja-rJP", "in-rID", "de-rDE"))
@@ -80,19 +79,19 @@ android {
     }
     buildTypes {
         buildTypes {
-            getByName("release") {
-                isShrinkResources = true
-                isMinifyEnabled = true
-                val config = try {
-                    signingConfigs.getByName("release")
-                } catch (_: UnknownDomainObjectException) {
-                    null
-                }
-                if (config != null) {
-                    signingConfig = config
-                }
-                proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            }
+//            getByName("release") {
+//                isShrinkResources = true
+//                isMinifyEnabled = true
+//                val config = try {
+//                    signingConfigs.getByName("release")
+//                } catch (_: UnknownDomainObjectException) {
+//                    null
+//                }
+//                if (config != null) {
+//                    signingConfig = config
+//                }
+//                proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+//            }
             getByName("debug") {
                 applicationIdSuffix = ".debug"
             }
@@ -107,7 +106,7 @@ android {
         )
     }
     compileOptions {
-        coreLibraryDesugaringEnabled = true
+//        coreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -197,11 +196,11 @@ dependencies {
     implementation("com.mikepenz:materialdrawer:8.0.1")
     implementation("com.github.kenglxn.QRGen:android:2.6.0")
     implementation("xyz.belvi.mobilevision:barcodescanner:2.0.3")
-    implementation("com.google.firebase:firebase-core:17.3.0")
-    implementation("com.google.firebase:firebase-analytics:17.3.0")
-    implementation("com.crashlytics.sdk.android:crashlytics:2.10.1")
-    implementation("com.google.android.gms:play-services-vision:20.0.0")
-    implementation("com.google.android.gms:play-services-oss-licenses:17.0.0")
+//    implementation("com.google.firebase:firebase-core:17.3.0")
+//    implementation("com.google.firebase:firebase-analytics:17.3.0")
+//    implementation("com.crashlytics.sdk.android:crashlytics:2.10.1")
+//    implementation("com.google.android.gms:play-services-vision:20.0.0")
+//    implementation("com.google.android.gms:play-services-oss-licenses:17.0.0")
     implementation("com.android.billingclient:billing:2.2.0")
     implementation("com.takisoft.preferencex:preferencex-simplemenu:1.1.0")
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")

@@ -21,13 +21,12 @@ import android.view.View
 import androidx.core.net.toUri
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import onlymash.flexbooru.BuildConfig
 import onlymash.flexbooru.R
+import onlymash.flexbooru.extension.ListListener
 import onlymash.flexbooru.extension.launchUrl
 import onlymash.flexbooru.extension.openAppInMarket
 import onlymash.flexbooru.ui.activity.CopyrightActivity
-import onlymash.flexbooru.extension.ListListener
 
 
 class AboutFragment : PreferenceFragmentCompat() {
@@ -80,12 +79,12 @@ class AboutFragment : PreferenceFragmentCompat() {
                     startActivity(Intent(this, CopyrightActivity::class.java))
                 }
             }
-            "about_licenses" -> {
-                context?.run {
-                    OssLicensesMenuActivity.setActivityTitle("Open Source Licenses")
-                    startActivity(Intent(this, OssLicensesMenuActivity::class.java))
-                }
-            }
+//            "about_licenses" -> {
+//                context?.run {
+//                    OssLicensesMenuActivity.setActivityTitle("Open Source Licenses")
+//                    startActivity(Intent(this, OssLicensesMenuActivity::class.java))
+//                }
+//            }
         }
         return super.onPreferenceTreeClick(preference)
     }

@@ -20,6 +20,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.Toolbar
@@ -32,33 +35,39 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import onlymash.flexbooru.R
 import onlymash.flexbooru.common.Keys
 import onlymash.flexbooru.common.Settings.activatedBooruUid
-import onlymash.flexbooru.common.Values.Tags
 import onlymash.flexbooru.common.Values.BOORU_TYPE_DAN
 import onlymash.flexbooru.common.Values.BOORU_TYPE_SANKAKU
+import onlymash.flexbooru.common.Values.Tags
 import onlymash.flexbooru.data.database.BooruManager
 import onlymash.flexbooru.data.database.HistoryManager
 import onlymash.flexbooru.data.database.TagFilterManager
+import onlymash.flexbooru.data.database.dao.BooruDao
 import onlymash.flexbooru.data.database.dao.PostDao
 import onlymash.flexbooru.data.model.common.*
 import onlymash.flexbooru.extension.copyText
 import onlymash.flexbooru.ui.activity.SearchActivity
+import onlymash.flexbooru.ui.viewmodel.BooruViewModel
 import onlymash.flexbooru.ui.viewmodel.ShortcutViewModel
+import onlymash.flexbooru.ui.viewmodel.getBooruViewModel
 import onlymash.flexbooru.ui.viewmodel.getShortcutViewModel
 import org.kodein.di.erased.instance
 
 class ShortcutTagFragment : BaseBottomSheetDialogFragment() {
     companion object {
-        fun create(postId: Int): ShortcutTagFragment {
+        private const val KEYWORD = "key"
+        fun create(postId: Int, query: String): ShortcutTagFragment {
             return ShortcutTagFragment().apply {
                 arguments = Bundle().apply {
                     putInt(Keys.POST_ID, postId)
+                    putString(KEYWORD, query)
                 }
             }
         }
     }
 
     private lateinit var behavior: BottomSheetBehavior<View>
-
+    private lateinit var booruViewModel: BooruViewModel
+    private val booruDao by instance<BooruDao>()
     private val postDao by instance<PostDao>()
 
     private var postId = -1
@@ -68,10 +77,13 @@ class ShortcutTagFragment : BaseBottomSheetDialogFragment() {
 
     private lateinit var shortcutViewModel: ShortcutViewModel
 
+    //
+    private var keyword: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.apply {
             postId = getInt(Keys.POST_ID, -1)
+            keyword = getString(KEYWORD, "")
         }
         val booru = BooruManager.getBooruByUid(activatedBooruUid)
         if (booru == null) {
@@ -79,6 +91,8 @@ class ShortcutTagFragment : BaseBottomSheetDialogFragment() {
             return
         }
         this.booru = booru
+
+        booruViewModel = getBooruViewModel(booruDao)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -103,7 +117,7 @@ class ShortcutTagFragment : BaseBottomSheetDialogFragment() {
             }
 
         })
-        val tagListAdapter = TagListAdapter()
+        val tagListAdapter = TagListAdapter(keyword)
         view.findViewById<RecyclerView>(R.id.tags_list).apply {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             adapter = tagListAdapter
@@ -121,17 +135,18 @@ class ShortcutTagFragment : BaseBottomSheetDialogFragment() {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
-    inner class TagListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    inner class TagListAdapter(keyword: String) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
         override fun getItemCount(): Int = post?.tags?.size ?: 0
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             val tag = post?.tags?.get(position)
-            (holder as TagListViewHolder).bind(tag)
+            (holder as TagListViewHolder).bind(tag, keyword)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            return TagListViewHolder(LayoutInflater.from(parent.context)
+            return TagListViewHolder(
+                LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_tag_browse, parent, false))
         }
     }
@@ -162,15 +177,38 @@ class ShortcutTagFragment : BaseBottomSheetDialogFragment() {
                 true
             }
             tagExclude.setOnClickListener {
-                tag?.let {
-                    TagFilterManager.createTagFilter(
-                        TagFilter(
-                            booruUid = booru.uid,
-                            name = "-${it.name}",
-                            type = it.category
-                        )
+                val padding = resources.getDimensionPixelSize(R.dimen.spacing_mlarge)
+                val layout = FrameLayout(requireContext()).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
                     )
+                    setPadding(padding, padding / 2, padding, 0)
                 }
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Add to blacklist tag for ${tagName.text} ?")
+                    .setView(layout)
+                    .setPositiveButton(R.string.dialog_yes) { _, _ ->
+                        tag?.let {
+                            TagFilterManager.createTagFilter(
+                                TagFilter(
+                                    booruUid = booru.uid,
+                                    name = "-${it.name}",
+                                    type = it.category
+                                )
+                            )
+                        }
+                        if (booru.blacklists.add(tagName.text.toString())) {
+                            booruViewModel.updateBooru(booru)
+                        }
+
+                        Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT).show()
+
+                    }
+                    .setNegativeButton(R.string.dialog_no, null)
+                    .create()
+                    .show()
+
             }
             tagInclude.setOnClickListener {
                 tag?.let {
@@ -182,20 +220,52 @@ class ShortcutTagFragment : BaseBottomSheetDialogFragment() {
                         )
                     )
                 }
+                HistoryManager.createHistory(
+                    History(
+                        booruUid = booru.uid,
+                        query = "$keyword ${tagName.text.toString()}"
+                    )
+                )
+                SearchActivity.startSearch(requireContext(), "$keyword ${tagName.text.toString()}")
             }
         }
 
-        fun bind(tag: TagBase?) {
+        fun bind(tag: TagBase?, keyword: String) {
             this.tag = tag ?: return
             tagName.text = tag.name
             when (booru.type) {
                 BOORU_TYPE_DAN -> {
                     when (tag.category) {
-                        Tags.TYPE_GENERAL -> dot.setColorFilter(ContextCompat.getColor(itemView.context,  R.color.tag_type_general))
-                        Tags.TYPE_ARTIST -> dot.setColorFilter(ContextCompat.getColor(itemView.context,  R.color.tag_type_artist))
-                        Tags.TYPE_COPYRIGHT -> dot.setColorFilter(ContextCompat.getColor(itemView.context,  R.color.tag_type_copyright))
-                        Tags.TYPE_CHARACTER -> dot.setColorFilter(ContextCompat.getColor(itemView.context,  R.color.tag_type_character))
-                        Tags.TYPE_META -> dot.setColorFilter(ContextCompat.getColor(itemView.context,  R.color.tag_type_meta))
+                        Tags.TYPE_GENERAL -> dot.setColorFilter(
+                            ContextCompat.getColor(
+                                itemView.context,
+                                R.color.tag_type_general
+                            )
+                        )
+                        Tags.TYPE_ARTIST -> dot.setColorFilter(
+                            ContextCompat.getColor(
+                                itemView.context,
+                                R.color.tag_type_artist
+                            )
+                        )
+                        Tags.TYPE_COPYRIGHT -> dot.setColorFilter(
+                            ContextCompat.getColor(
+                                itemView.context,
+                                R.color.tag_type_copyright
+                            )
+                        )
+                        Tags.TYPE_CHARACTER -> dot.setColorFilter(
+                            ContextCompat.getColor(
+                                itemView.context,
+                                R.color.tag_type_character
+                            )
+                        )
+                        Tags.TYPE_META -> dot.setColorFilter(
+                            ContextCompat.getColor(
+                                itemView.context,
+                                R.color.tag_type_meta
+                            )
+                        )
                         else -> dot.setColorFilter(ContextCompat.getColor(itemView.context,  R.color.tag_type_unknown))
                     }
                 }

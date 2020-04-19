@@ -26,7 +26,6 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.MenuRes
 import androidx.annotation.NavigationRes
-import androidx.appcompat.app.AlertDialog
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
@@ -41,7 +40,9 @@ import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.mikepenz.materialdrawer.holder.ImageHolder
 import com.mikepenz.materialdrawer.holder.StringHolder
-import com.mikepenz.materialdrawer.model.*
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem
+import com.mikepenz.materialdrawer.model.ProfileSettingDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IProfile
 import com.mikepenz.materialdrawer.util.addItemAtPosition
@@ -50,9 +51,6 @@ import com.mikepenz.materialdrawer.util.getDrawerItem
 import com.mikepenz.materialdrawer.util.removeItems
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import onlymash.flexbooru.BuildConfig
 import onlymash.flexbooru.R
 import onlymash.flexbooru.common.Settings.AUTO_HIDE_BOTTOM_BAR_KEY
 import onlymash.flexbooru.common.Settings.BOORU_UID_ACTIVATED_KEY
@@ -60,15 +58,9 @@ import onlymash.flexbooru.common.Settings.NIGHT_THEME_KEY
 import onlymash.flexbooru.common.Settings.ORDER_SUCCESS_KEY
 import onlymash.flexbooru.common.Settings.activatedBooruUid
 import onlymash.flexbooru.common.Settings.autoHideBottomBar
-import onlymash.flexbooru.common.Settings.isAvailableOnStore
-import onlymash.flexbooru.common.Settings.isGoogleSign
 import onlymash.flexbooru.common.Settings.isOrderSuccess
-import onlymash.flexbooru.common.Settings.latestVersionCode
-import onlymash.flexbooru.common.Settings.latestVersionName
-import onlymash.flexbooru.common.Settings.latestVersionUrl
 import onlymash.flexbooru.common.Values.BOORU_TYPE_DAN
 import onlymash.flexbooru.common.Values.BOORU_TYPE_DAN1
-import onlymash.flexbooru.data.api.AppUpdaterApi
 import onlymash.flexbooru.common.Values.BOORU_TYPE_GEL
 import onlymash.flexbooru.common.Values.BOORU_TYPE_MOE
 import onlymash.flexbooru.common.Values.BOORU_TYPE_SANKAKU
@@ -76,12 +68,12 @@ import onlymash.flexbooru.common.Values.BOORU_TYPE_SHIMMIE
 import onlymash.flexbooru.common.Values.BOORU_TYPE_UNKNOWN
 import onlymash.flexbooru.data.database.dao.BooruDao
 import onlymash.flexbooru.data.model.common.Booru
-import onlymash.flexbooru.extension.*
+import onlymash.flexbooru.extension.setup
+import onlymash.flexbooru.extension.setupInsets
 import onlymash.flexbooru.ui.fragment.SearchBarFragment
+import onlymash.flexbooru.ui.helper.isNightEnable
 import onlymash.flexbooru.ui.viewmodel.BooruViewModel
 import onlymash.flexbooru.ui.viewmodel.getBooruViewModel
-import onlymash.flexbooru.extension.setupInsets
-import onlymash.flexbooru.ui.helper.isNightEnable
 import org.kodein.di.erased.instance
 
 class MainActivity : PathActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
@@ -147,7 +139,14 @@ class MainActivity : PathActivity(), SharedPreferences.OnSharedPreferenceChangeL
             }
             DRAWER_ITEM_ID_TAG_BLACKLIST -> {
                 if (currentBooru?.type ?: BOORU_TYPE_UNKNOWN
-                    in intArrayOf(BOORU_TYPE_MOE, BOORU_TYPE_DAN, BOORU_TYPE_DAN1, BOORU_TYPE_GEL)) {
+                    in intArrayOf(
+                        BOORU_TYPE_SANKAKU,
+                        BOORU_TYPE_MOE,
+                        BOORU_TYPE_DAN,
+                        BOORU_TYPE_DAN1,
+                        BOORU_TYPE_GEL
+                    )
+                ) {
                     toActivity(TagBlacklistActivity::class.java)
                 } else {
                     notSupportedToast()
@@ -350,6 +349,177 @@ class MainActivity : PathActivity(), SharedPreferences.OnSharedPreferenceChangeL
         ImageHolder(ResourcesCompat.getDrawable(resources, resId, theme))
 
     private fun createDefaultBooru(): Long {
+        booruViewModel.createBooru(
+            Booru(
+                name = "Sankaku",
+                scheme = "https",
+                host = "capi-v2.sankakucomplex.com",
+                hashSalt = "choujin-steiner--your-password--",
+                type = BOORU_TYPE_SANKAKU
+            )
+
+        )
+
+        booruViewModel.createBooru(
+            Booru(
+                name = "safebooru",
+                scheme = "https",
+                host = "safebooru.donmai.us",
+                hashSalt = "",
+                type = BOORU_TYPE_DAN
+            )
+
+        )
+
+        booruViewModel.createBooru(
+            Booru(
+                name = "Danbooru",
+                scheme = "https",
+                host = "danbooru.donmai.us",
+                hashSalt = "onlymash--your-password--",
+                type = BOORU_TYPE_DAN
+            )
+        )
+
+        booruViewModel.createBooru(
+            Booru(
+                name = "rule34.xxx",
+                scheme = "https",
+                host = "rule34.xxx",
+                hashSalt = "",
+                type = BOORU_TYPE_GEL
+            )
+        )
+        booruViewModel.createBooru(
+            Booru(
+                name = "Gelbooru",
+                scheme = "https",
+                host = "gelbooru.com",
+                hashSalt = "",
+                type = BOORU_TYPE_GEL
+            )
+        )
+        booruViewModel.createBooru(
+            Booru(
+                name = "e926.net",
+                scheme = "https",
+                host = "e926.net",
+                hashSalt = "--your-password--",
+                type = BOORU_TYPE_DAN
+            )
+        )
+        booruViewModel.createBooru(
+            Booru(
+                name = "lolibooru",
+                scheme = "http",
+                host = "lolibooru.moe",
+                hashSalt = "--your-password--",
+                type = BOORU_TYPE_MOE
+            )
+        )
+        booruViewModel.createBooru(
+            Booru(
+                name = "3dbooru",
+                scheme = "http",
+                host = "behoimi.org",
+                hashSalt = "meganekko-heaven--your-password--",
+                type = BOORU_TYPE_DAN1
+            )
+
+        )
+        booruViewModel.createBooru(
+            Booru(
+                name = "hypnohub",
+                scheme = "https",
+                host = "hypnohub.net",
+                hashSalt = "--your-password--",
+                type = BOORU_TYPE_MOE
+            )
+
+        )
+        booruViewModel.createBooru(
+            Booru(
+                name = "e621.net",
+                scheme = "https",
+                host = "e621.net",
+                hashSalt = "--your-password--",
+                type = BOORU_TYPE_DAN
+            )
+
+        )
+        booruViewModel.createBooru(
+            Booru(
+                name = "yande.re",
+                scheme = "https",
+                host = "yande.re",
+                hashSalt = "So-I-Heard-You-Like-Mupkids-?--your-password--",
+                type = BOORU_TYPE_MOE
+            )
+
+        )
+        booruViewModel.createBooru(
+            Booru(
+                name = "Konachan",
+                scheme = "https",
+                host = "konachan.com",
+                hashSalt = "So-I-Heard-You-Like-Mupkids-?--your-password--",
+                type = BOORU_TYPE_MOE
+            )
+
+        )
+
+        booruViewModel.createBooru(
+            Booru(
+                name = "Sakugabooru",
+                scheme = "https",
+                host = "www.sakugabooru.com",
+                hashSalt = "So-I-Heard-You-Like-Mupkids-?--your-password--",
+                type = BOORU_TYPE_MOE
+            )
+
+        )
+        booruViewModel.createBooru(
+            Booru(
+                name = "TBIB",
+                scheme = "https",
+                host = "tbib.org",
+                hashSalt = "",
+                type = BOORU_TYPE_GEL
+            )
+        )
+
+        booruViewModel.createBooru(
+            Booru(
+                name = "Dante's Archive",
+                scheme = "https",
+                host = "cow.zone",
+                hashSalt = "er@!\$rjiajd0\$!dkaopc350!Y%)--your-password--",
+                type = BOORU_TYPE_SHIMMIE
+            )
+
+        )
+
+        booruViewModel.createBooru(
+            Booru(
+                name = "EvBooru",
+                scheme = "https",
+                host = "evbooru.com",
+                hashSalt = "choujin-steiner--your-password--",
+                type = BOORU_TYPE_MOE
+            )
+
+        )
+
+        booruViewModel.createBooru(
+            Booru(
+                name = "AllTheFallen",
+                scheme = "https",
+                host = "booru.allthefallen.moe",
+                hashSalt = "choujin-steiner--your-password--",
+                type = BOORU_TYPE_DAN
+            )
+
+        )
         return booruViewModel.createBooru(
             Booru(
                 name = "Sample",
@@ -358,34 +528,35 @@ class MainActivity : PathActivity(), SharedPreferences.OnSharedPreferenceChangeL
                 hashSalt = "onlymash--your-password--",
                 type = BOORU_TYPE_MOE
             )
+
         )
     }
 
     private fun checkUpdate() {
-        GlobalScope.launch {
-            AppUpdaterApi.checkUpdate()
-        }
-        if (BuildConfig.VERSION_CODE < latestVersionCode) {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.update_found_update)
-                .setMessage(getString(R.string.update_version, latestVersionName))
-                .setPositiveButton(R.string.dialog_update) { _, _ ->
-                    if (isGoogleSign && isAvailableOnStore) {
-                        openAppInMarket(applicationContext.packageName)
-                    } else {
-                        launchUrl(latestVersionUrl)
-                    }
-                    finish()
-                }
-                .setNegativeButton(R.string.dialog_exit) { _, _ ->
-                    finish()
-                }
-                .create().apply {
-                    setCancelable(false)
-                    setCanceledOnTouchOutside(false)
-                    show()
-                }
-        }
+//        GlobalScope.launch {
+//            AppUpdaterApi.checkUpdate()
+//        }
+//        if (BuildConfig.VERSION_CODE < latestVersionCode) {
+//            AlertDialog.Builder(this)
+//                .setTitle(R.string.update_found_update)
+//                .setMessage(getString(R.string.update_version, latestVersionName))
+//                .setPositiveButton(R.string.dialog_update) { _, _ ->
+//                    if (isGoogleSign && isAvailableOnStore) {
+//                        openAppInMarket(applicationContext.packageName)
+//                    } else {
+//                        launchUrl(latestVersionUrl)
+//                    }
+//                    finish()
+//                }
+//                .setNegativeButton(R.string.dialog_exit) { _, _ ->
+//                    finish()
+//                }
+//                .create().apply {
+//                    setCancelable(false)
+//                    setCanceledOnTouchOutside(false)
+//                    show()
+//                }
+//        }
     }
 
     private fun initDrawerHeader() {
@@ -407,9 +578,19 @@ class MainActivity : PathActivity(), SharedPreferences.OnSharedPreferenceChangeL
             }
             headerView.addProfile(
                 ProfileDrawerItem().apply {
-                    icon = ImageHolder(Uri.parse(String.format("%s://%s/favicon.ico", booru.scheme, host)))
+                    icon = ImageHolder(
+                        Uri.parse(
+                            String.format(
+                                "%s://%s/favicon.ico",
+                                booru.scheme,
+                                host
+                            )
+                        )
+                    )
                     name = StringHolder(booru.name)
-                    description = StringHolder(String.format("%s://%s", booru.scheme, booru.host))
+//                    description = StringHolder(String.format("%s://%s", booru.scheme, booru.host))
+                    description = StringHolder(booru.name)
+
                     identifier = booru.uid
                 },
                 index

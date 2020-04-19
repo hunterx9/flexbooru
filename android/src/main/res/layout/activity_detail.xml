@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (C) 2020. by onlymash <im@fiepi.me>, All rights reserved
   ~
   ~ This program is free software: you can redistribute it and/or modify it under
@@ -14,8 +13,7 @@
   ~ this program. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<merge
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,33 +22,73 @@
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/detail_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
     <FrameLayout
-            android:id="@+id/shadow"
+        android:id="@+id/shadow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <View
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        <View
-                android:layout_width="match_parent"
-                android:layout_height="110dp"
-                android:layout_gravity="top"
-                android:background="@drawable/background_browse_top"/>
-
-        <View
-                android:layout_width="match_parent"
-                android:layout_height="140dp"
-                android:layout_gravity="bottom"
-                android:background="@drawable/background_browse_bottom"/>
-    </FrameLayout>
-
-    <FrameLayout
-            android:id="@+id/toolbar_container"
+            android:layout_height="110dp"
             android:layout_gravity="top"
+            android:background="@drawable/background_browse_top" />
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="?android:attr/actionBarSize">
-        <include layout="@layout/toolbar_transparent"/>
+            android:layout_height="60dp"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="90dp"
+            android:gravity="center"
+            android:weightSum="1">
+
+            <ImageView
+                android:id="@+id/prevBtn"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="0.2"
+                android:src="@drawable/ic_prev" />
+
+
+            <ImageView
+                android:id="@+id/nextBtn"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="0.2"
+                android:src="@drawable/ic_next" />
+
+            <ImageView
+                android:id="@+id/recommend_btn"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="0.1"
+                android:src="@drawable/ic_photo_filter_24dp"
+                android:visibility="invisible" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/background_browse_bottom" />
     </FrameLayout>
 
-    <include layout="@layout/bottom_shortcut_bar"/>
+    <FrameLayout
+        android:id="@+id/toolbar_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:minHeight="?android:attr/actionBarSize">
+
+        <include layout="@layout/toolbar_transparent" />
+    </FrameLayout>
+
+    <include layout="@layout/bottom_shortcut_bar" />
 </merge>

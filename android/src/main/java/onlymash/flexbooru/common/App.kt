@@ -30,7 +30,6 @@ import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader
 import com.mikepenz.materialdrawer.util.DrawerImageLoader
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import onlymash.flexbooru.BuildConfig
 import onlymash.flexbooru.R
 import onlymash.flexbooru.common.Settings.isGoogleSign
 import onlymash.flexbooru.common.Settings.isOrderSuccess
@@ -46,7 +45,10 @@ import onlymash.flexbooru.glide.GlideApp
 import onlymash.flexbooru.ui.activity.PurchaseActivity
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
-import org.kodein.di.erased.*
+import org.kodein.di.erased.bind
+import org.kodein.di.erased.instance
+import org.kodein.di.erased.provider
+import org.kodein.di.erased.singleton
 
 class App : Application(), KodeinAware {
 
@@ -56,7 +58,11 @@ class App : Application(), KodeinAware {
 
     override val kodein by Kodein.lazy {
         bind<Context>() with instance(this@App)
-        bind<SharedPreferences>() with provider { PreferenceManager.getDefaultSharedPreferences(instance()) }
+        bind<SharedPreferences>() with provider {
+            PreferenceManager.getDefaultSharedPreferences(
+                instance()
+            )
+        }
         bind() from singleton { MyDatabase(instance()) }
         bind() from singleton { instance<MyDatabase>().booruDao() }
         bind() from singleton { instance<MyDatabase>().cookieDao() }
@@ -72,9 +78,15 @@ class App : Application(), KodeinAware {
             GlideApp.with(imageView.context)
                 .load(uri)
                 .centerCrop()
-                .placeholder(ContextCompat.getDrawable(imageView.context, R.drawable.avatar_account))
+                .placeholder(
+                    ContextCompat.getDrawable(
+                        imageView.context,
+                        R.drawable.avatar_account
+                    )
+                )
                 .into(imageView)
         }
+
         override fun cancel(imageView: ImageView) {
             Glide.with(imageView.context).clear(imageView)
         }
@@ -89,11 +101,12 @@ class App : Application(), KodeinAware {
     private fun initial() {
         AppCompatDelegate.setDefaultNightMode(nightMode)
         DrawerImageLoader.init(drawerImageLoader)
-        if (BuildConfig.DEBUG) {
-            return
-        }
+        isOrderSuccess = true
+//        if (BuildConfig.DEBUG) {
+//            return
+//        }
         CrashHandler.getInstance().init(this)
-        checkOrder()
+//        checkOrder()
     }
 
     private fun checkOrder() {
@@ -117,14 +130,15 @@ class App : Application(), KodeinAware {
         val billingClient = BillingClient
             .newBuilder(this)
             .enablePendingPurchases()
-            .setListener { _, _ ->  }
+            .setListener { _, _ -> }
             .build()
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult?) {
                 if (billingClient.isReady) {
-                    val purchases = billingClient.queryPurchases(BillingClient.SkuType.INAPP).purchasesList
+                    val purchases =
+                        billingClient.queryPurchases(BillingClient.SkuType.INAPP).purchasesList
                     isOrderSuccess = if (purchases.isNullOrEmpty()) {
-                       false
+                        false
                     } else {
                         val index = purchases.indexOfFirst {
                             it.sku == PurchaseActivity.SKU && it.purchaseState == Purchase.PurchaseState.PURCHASED
@@ -135,7 +149,7 @@ class App : Application(), KodeinAware {
                                 val ackParams = AcknowledgePurchaseParams.newBuilder()
                                     .setPurchaseToken(purchase.purchaseToken)
                                     .build()
-                                billingClient.acknowledgePurchase(ackParams){}
+                                billingClient.acknowledgePurchase(ackParams) {}
                             }
                             true
                         } else false
@@ -143,6 +157,7 @@ class App : Application(), KodeinAware {
                     billingClient.endConnection()
                 }
             }
+
             override fun onBillingServiceDisconnected() {
                 billingClient.endConnection()
             }

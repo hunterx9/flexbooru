@@ -223,4 +223,16 @@ object Settings {
     var sauceNaoApiKey: String
         get() = sp.getString(SAUCE_NAO_API_KEY_KEY, "") ?: ""
         set(value) = sp.edit().putString(SAUCE_NAO_API_KEY_KEY, value).apply()
+
+
+    //MOD
+    const val EXPLICIT_MODE_KEY = "settings_explicit_mode"
+    var explicitMode: Boolean
+        get() = sp.getBoolean(EXPLICIT_MODE_KEY, true)
+        set(value) = sp.edit().putBoolean(EXPLICIT_MODE_KEY, value).apply()
+    const val SETTINGS_PRELOAD_PAGE_SIZE = "settings_preload_page_size"
+
+    var preload_limit: Int
+        get() = sp.getString(SETTINGS_PRELOAD_PAGE_SIZE, "2")!!.toInt()
+        set(value) = sp.edit().putString(SETTINGS_PRELOAD_PAGE_SIZE, value.toString()).apply()
 }

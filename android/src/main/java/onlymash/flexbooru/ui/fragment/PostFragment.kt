@@ -51,6 +51,7 @@ import onlymash.flexbooru.common.Settings.PAGE_LIMIT_KEY
 import onlymash.flexbooru.common.Settings.SAFE_MODE_KEY
 import onlymash.flexbooru.common.Settings.SHOW_ALL_TAGS_KEY
 import onlymash.flexbooru.common.Settings.SHOW_INFO_BAR_KEY
+import onlymash.flexbooru.common.Settings.explicitMode
 import onlymash.flexbooru.common.Settings.gridMode
 import onlymash.flexbooru.common.Settings.gridRatio
 import onlymash.flexbooru.common.Settings.gridWidthResId
@@ -77,6 +78,7 @@ import onlymash.flexbooru.data.repository.favorite.VoteRepositoryImpl
 import onlymash.flexbooru.data.repository.isRunning
 import onlymash.flexbooru.data.repository.post.PostRepositoryImpl
 import onlymash.flexbooru.data.repository.tagfilter.TagFilterRepositoryImpl
+import onlymash.flexbooru.extension.removeWord
 import onlymash.flexbooru.extension.rotate
 import onlymash.flexbooru.glide.GlideApp
 import onlymash.flexbooru.ui.activity.DetailActivity
@@ -133,11 +135,20 @@ class PostFragment : SearchBarFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var keyword: String = activity?.intent?.getStringExtra(POST_QUERY) ?: ""
         currentPageType = arguments?.getInt(PAGE_TYPE, PAGE_TYPE_POSTS) ?: PAGE_TYPE_POSTS
+        if (!safeMode && explicitMode) {
+            keyword = keyword.removeWord(keyword, "rating:explicit").toString()
+            keyword = "${keyword?.trim()} rating:explicit"
+        }
+        if (safeMode && explicitMode) {
+            keyword = keyword.removeWord(keyword, "rating:questionable").toString()
+            keyword = "${keyword?.trim()} rating:questionable"
+        }
         query = if (isPopularPage()) {
             "order:popular"
         } else {
-            activity?.intent?.getStringExtra(POST_QUERY) ?: ""
+            keyword
         }
         initDate()
     }

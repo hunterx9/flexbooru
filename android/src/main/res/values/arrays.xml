@@ -92,10 +92,22 @@
         <item>@string/settings_post_size_larger</item>
         <item>@string/settings_post_size_origin</item>
     </string-array>
+    <string-array name="settings_post_preload_entries">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
     <string-array name="settings_post_size_entries_values">
         <item>sample</item>
         <item>larger</item>
         <item>origin</item>
+    </string-array>
+    <string-array name="settings_post_preload_values">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
     </string-array>
     <string-array name="settings_grid_mode_entries">
         <item>@string/settings_grid_mode_fixed</item>

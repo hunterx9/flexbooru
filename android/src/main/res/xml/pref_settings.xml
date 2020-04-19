@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (C) 2020. by onlymash <im@fiepi.me>, All rights reserved
   ~
   ~ This program is free software: you can redistribute it and/or modify it under
@@ -14,76 +13,75 @@
   ~ this program. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<PreferenceScreen
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:key="settings_screen"
-    app:initialExpandedChildrenCount="5">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:initialExpandedChildrenCount="5"
+    app:key="settings_screen">
 
     <PreferenceCategory
         app:key="settings_display"
         app:title="@string/settings_display">
 
         <com.takisoft.preferencex.SimpleMenuPreference
+            app:defaultValue="system"
             app:entries="@array/settings_night_mode_entries"
             app:entryValues="@array/settings_night_mode_entries_values"
-            app:defaultValue="system"
-            app:title="@string/settings_night_mode"
             app:icon="@drawable/ic_brightness_2_outline_24dp"
             app:key="settings_night"
-            app:useSimpleSummaryProvider="true"/>
+            app:title="@string/settings_night_mode"
+            app:useSimpleSummaryProvider="true" />
 
         <com.takisoft.preferencex.SimpleMenuPreference
+            app:defaultValue="dark"
             app:entries="@array/settings_night_theme_entries"
             app:entryValues="@array/settings_night_theme_entries_values"
-            app:defaultValue="dark"
-            app:title="@string/settings_night_theme"
             app:key="settings_night_theme"
-            app:useSimpleSummaryProvider="true"/>
+            app:title="@string/settings_night_theme"
+            app:useSimpleSummaryProvider="true" />
 
         <com.takisoft.preferencex.SimpleMenuPreference
-            app:key="settings_grid_mode"
+            app:defaultValue="fixed"
             app:entries="@array/settings_grid_mode_entries"
             app:entryValues="@array/settings_grid_mode_entries_values"
-            app:defaultValue="fixed"
+            app:key="settings_grid_mode"
             app:title="@string/settings_grid_mode"
             app:useSimpleSummaryProvider="true" />
 
         <com.takisoft.preferencex.SimpleMenuPreference
-            app:key="settings_grid_ratio"
+            app:defaultValue="1:1"
             app:entries="@array/settings_grid_ratio_entries"
             app:entryValues="@array/settings_grid_ratio_entries_values"
-            app:defaultValue="1:1"
+            app:key="settings_grid_ratio"
             app:title="@string/settings_grid_ratio"
             app:useSimpleSummaryProvider="true" />
 
         <com.takisoft.preferencex.SimpleMenuPreference
-            app:key="settings_grid_width"
+            app:defaultValue="normal"
             app:entries="@array/settings_grid_width_entries"
             app:entryValues="@array/settings_grid_width_entries_values"
-            app:defaultValue="normal"
+            app:key="settings_grid_width"
             app:title="@string/settings_grid_width"
             app:useSimpleSummaryProvider="true" />
 
         <SwitchPreference
+            app:defaultValue="false"
             app:key="settings_show_info_bar"
-            app:title="@string/settings_show_info_bar"
-            app:defaultValue="false"
+            app:summaryOff="@string/switch_no"
             app:summaryOn="@string/switch_yes"
-            app:summaryOff="@string/switch_no"/>
+            app:title="@string/settings_show_info_bar" />
 
         <SwitchPreference
+            app:defaultValue="false"
             app:key="settings_show_all_tags"
-            app:title="@string/settings_show_all_tags"
-            app:defaultValue="false"
+            app:summaryOff="@string/switch_no"
             app:summaryOn="@string/switch_yes"
-            app:summaryOff="@string/switch_no"/>
+            app:title="@string/settings_show_all_tags" />
 
         <SwitchPreference
-            app:key="settings_auto_hide_bottom_bar"
-            app:title="@string/settings_auto_hide_bottom_bar"
             app:defaultValue="false"
+            app:key="settings_auto_hide_bottom_bar"
+            app:summaryOff="@string/switch_no"
             app:summaryOn="@string/switch_yes"
-            app:summaryOff="@string/switch_no"/>
+            app:title="@string/settings_auto_hide_bottom_bar" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -91,35 +89,50 @@
         app:title="@string/settings_options">
 
         <SwitchPreference
-            app:key="settings_safe_mode"
-            app:title="@string/settings_safe_mode"
             app:defaultValue="true"
+            app:key="settings_safe_mode"
+            app:summaryOff="@string/switch_off"
             app:summaryOn="@string/switch_on"
-            app:summaryOff="@string/switch_off"/>
+            app:title="@string/settings_safe_mode" />
+
+        <SwitchPreference
+            app:defaultValue="false"
+            app:key="settings_explicit_mode"
+            app:summaryOff="@string/switch_off"
+            app:summaryOn="@string/switch_on"
+            app:title="Explicit mode only?" />
 
         <com.takisoft.preferencex.SimpleMenuPreference
-            app:key="settings_page_limit"
+            app:defaultValue="2"
+            app:entries="@array/settings_post_preload_entries"
+            app:entryValues="@array/settings_post_preload_values"
+            app:key="settings_preload_page_size"
+            app:title="Preload posts in post detail"
+            app:useSimpleSummaryProvider="true" />
+
+        <com.takisoft.preferencex.SimpleMenuPreference
+            app:defaultValue="10"
             app:entries="@array/settings_page_limit_entries"
             app:entryValues="@array/settings_page_limit_entries_values"
-            app:defaultValue="10"
+            app:key="settings_page_limit"
             app:title="@string/settings_page_limit"
-            app:useSimpleSummaryProvider="true"/>
+            app:useSimpleSummaryProvider="true" />
 
         <com.takisoft.preferencex.SimpleMenuPreference
-            app:key="settings_detail_size"
-            app:entries="@array/settings_post_size_entries"
-            app:entryValues="@array/settings_post_size_entries_values"
             app:defaultValue="sample"
-            app:title="@string/settings_detail_size"
-            app:useSimpleSummaryProvider="true"/>
-
-        <com.takisoft.preferencex.SimpleMenuPreference
-            app:key="settings_download_size"
             app:entries="@array/settings_post_size_entries"
             app:entryValues="@array/settings_post_size_entries_values"
+            app:key="settings_detail_size"
+            app:title="@string/settings_detail_size"
+            app:useSimpleSummaryProvider="true" />
+
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="larger"
+            app:entries="@array/settings_post_size_entries"
+            app:entryValues="@array/settings_post_size_entries_values"
+            app:key="settings_download_size"
             app:title="@string/settings_download_size"
-            app:useSimpleSummaryProvider="true"/>
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -127,20 +140,20 @@
         app:title="@string/settings_muzei">
 
         <com.takisoft.preferencex.SimpleMenuPreference
-            app:key="settings_muzei_limit"
+            app:defaultValue="10"
             app:entries="@array/settings_muzei_limit_entries"
             app:entryValues="@array/settings_muzei_limit_entries_values"
-            app:defaultValue="10"
+            app:key="settings_muzei_limit"
             app:title="@string/settings_muzei_limit"
-            app:useSimpleSummaryProvider="true"/>
+            app:useSimpleSummaryProvider="true" />
 
         <com.takisoft.preferencex.SimpleMenuPreference
-            app:key="settings_muzei_size"
+            app:defaultValue="larger"
             app:entries="@array/settings_post_size_entries"
             app:entryValues="@array/settings_post_size_entries_values"
-            app:defaultValue="larger"
+            app:key="settings_muzei_size"
             app:title="@string/settings_muzei_size"
-            app:useSimpleSummaryProvider="true"/>
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -149,11 +162,11 @@
 
         <Preference
             app:key="settings_download_path"
-            app:title="@string/settings_download_path"/>
+            app:title="@string/settings_download_path" />
 
         <Preference
             app:key="settings_clear_cache"
-            app:title="@string/settings_clear_cache"
-            app:summary="@string/settings_clear_cache_summery"/>
+            app:summary="@string/settings_clear_cache_summery"
+            app:title="@string/settings_clear_cache" />
     </PreferenceCategory>
 </PreferenceScreen>

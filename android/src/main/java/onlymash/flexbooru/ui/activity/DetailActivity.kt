@@ -40,7 +40,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.exoplayer2.ui.PlayerView
-
 import kotlinx.android.synthetic.main.activity_detail.*
 import kotlinx.android.synthetic.main.bottom_shortcut_bar.*
 import kotlinx.android.synthetic.main.toolbar_transparent.*
@@ -54,6 +53,7 @@ import onlymash.flexbooru.common.Settings.POST_SIZE_LARGER
 import onlymash.flexbooru.common.Settings.POST_SIZE_SAMPLE
 import onlymash.flexbooru.common.Settings.activatedBooruUid
 import onlymash.flexbooru.common.Settings.detailSize
+import onlymash.flexbooru.common.Settings.preload_limit
 import onlymash.flexbooru.common.Values.BOORU_TYPE_DAN
 import onlymash.flexbooru.common.Values.BOORU_TYPE_DAN1
 import onlymash.flexbooru.common.Values.BOORU_TYPE_GEL
@@ -83,7 +83,6 @@ import onlymash.flexbooru.widget.DismissFrameLayout
 import onlymash.flexbooru.worker.DownloadWorker
 import org.kodein.di.erased.instance
 import java.io.*
-import java.util.concurrent.Executor
 
 private const val ALPHA_MAX = 0xFF
 private const val ALPHA_MIN = 0x00
@@ -114,6 +113,7 @@ class DetailActivity : PathActivity(), DismissFrameLayout.OnDismissListener, Too
         }
     }
 
+    private lateinit var query: String
     private val postDao by instance<PostDao>()
     private val booruApis by instance<BooruApis>()
     private val voteRepository: VoteRepository by lazy { VoteRepositoryImpl(booruApis, postDao) }
@@ -138,11 +138,21 @@ class DetailActivity : PathActivity(), DismissFrameLayout.OnDismissListener, Too
         get() = detail_pager.findViewWithTag(String.format("player_%d", detail_pager.currentItem))
 
     private val pageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageScrolled(
+            position: Int,
+            positionOffset: Float,
+            positionOffsetPixels: Int
+        ) {
+            super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+            pagePostion = position
+        }
+
         override fun onPageScrollStateChanged(state: Int) {
             if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
                 playerHolder.pause()
             }
         }
+
         override fun onPageSelected(position: Int) {
             val post = detailAdapter.getPost(position)
             syncInfo(post)
@@ -194,6 +204,7 @@ class DetailActivity : PathActivity(), DismissFrameLayout.OnDismissListener, Too
         initPager()
         initToolbar()
         initShortcutBar()
+        initSliderBar()
     }
 
     private fun initInsets() {
@@ -211,7 +222,7 @@ class DetailActivity : PathActivity(), DismissFrameLayout.OnDismissListener, Too
     }
 
     private fun initPager() {
-        val query = intent?.getStringExtra(POST_QUERY) ?: ""
+        query = intent?.getStringExtra(POST_QUERY) ?: ""
         if (initPosition == POSITION_INIT) {
             initPosition = intent?.getIntExtra(POST_POSITION, POSITION_INITED) ?: POSITION_INITED
         }
@@ -235,6 +246,7 @@ class DetailActivity : PathActivity(), DismissFrameLayout.OnDismissListener, Too
             adapter = detailAdapter
             registerOnPageChangeCallback(pageChangeCallback)
         }
+        detail_pager.offscreenPageLimit = preload_limit
         detailViewModel = getDetailViewModel(postDao, booru.uid, query)
         detailViewModel.posts.observe(this, Observer { postList ->
             updatePosts(postList)
@@ -286,7 +298,7 @@ class DetailActivity : PathActivity(), DismissFrameLayout.OnDismissListener, Too
         TooltipCompat.setTooltipText(post_save, post_save.contentDescription)
         post_tags.setOnClickListener {
             currentPost?.let {
-                ShortcutTagFragment.create(it.id)
+                ShortcutTagFragment.create(it.id, query)
                     .show(supportFragmentManager, "tag")
             }
         }
@@ -606,7 +618,12 @@ class DetailActivity : PathActivity(), DismissFrameLayout.OnDismissListener, Too
             val file = tmpFile ?: return
             lifecycleScope.launch {
                 if (copyFile(file, uri)) {
-                    showToast(getString(R.string.msg_file_save_success, DocumentsContract.getDocumentId(uri)))
+                    showToast(
+                        getString(
+                            R.string.msg_file_save_success,
+                            DocumentsContract.getDocumentId(uri)
+                        )
+                    )
                 }
                 tmpFile = null
             }
@@ -615,5 +632,36 @@ class DetailActivity : PathActivity(), DismissFrameLayout.OnDismissListener, Too
 
     private fun showToast(msg: String) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+    }
+
+    //    MOD
+    private var pagePostion: Int = 0
+    private fun initSliderBar() {
+        prevBtn.setOnClickListener {
+            if (pagePostion != 0)
+                detail_pager.currentItem = pagePostion - 1
+        }
+        nextBtn.setOnClickListener {
+//            if (pagePostion < detailViewModel.posts?.)
+            detail_pager.currentItem = pagePostion + 1
+        }
+
+
+        if (booru.type == BOORU_TYPE_SANKAKU) {
+            recommend_btn.visibility = View.VISIBLE
+            recommend_btn.setOnClickListener {
+                val post = currentPost
+                val query = "recommended_for_post:${post?.id}"
+                HistoryManager.createHistory(
+                    History(
+                        booruUid = booru.uid,
+                        query = query
+                    )
+                )
+                SearchActivity.startSearch(this, query)
+
+            }
+        }
+
     }
 }
