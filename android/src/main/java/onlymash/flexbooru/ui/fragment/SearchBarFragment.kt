@@ -45,6 +45,8 @@ import onlymash.flexbooru.data.action.ActionTag
 import onlymash.flexbooru.data.api.BooruApis
 import onlymash.flexbooru.data.database.MuzeiManager
 import onlymash.flexbooru.data.database.dao.BooruDao
+import onlymash.flexbooru.data.database.dao.HistoryDao
+import onlymash.flexbooru.data.database.dao.PostDao
 import onlymash.flexbooru.data.model.common.Booru
 import onlymash.flexbooru.data.model.common.Muzei
 import onlymash.flexbooru.data.repository.suggestion.SuggestionRepositoryImpl
@@ -62,10 +64,11 @@ abstract class SearchBarFragment : BaseFragment(), SearchBar.Helper,
     private val sp by instance<SharedPreferences>()
     val booruApis by instance<BooruApis>()
     private val booruDao by instance<BooruDao>()
-
     private var actionTag: ActionTag? = null
 
     private lateinit var booruViewModel: BooruViewModel
+
+    private lateinit var historyViewModel: HistoryViewModel
     private lateinit var suggestionViewModel: SuggestionViewModel
 
     private lateinit var searchBar: SearchBar
@@ -80,6 +83,8 @@ abstract class SearchBarFragment : BaseFragment(), SearchBar.Helper,
     private lateinit var fabToListTop: FloatingActionButton
     private var systemUiBottomSize = 0
     private var systemUiTopSize = 0
+    private val historyDao by instance<HistoryDao>()
+    private val postDao by instance<PostDao>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -87,6 +92,7 @@ abstract class SearchBarFragment : BaseFragment(), SearchBar.Helper,
         savedInstanceState: Bundle?
     ): View? {
         booruViewModel = getBooruViewModel(booruDao)
+        historyViewModel = getHistoryViewModel(historyDao, postDao)
         suggestionViewModel = getSuggestionViewModel(SuggestionRepositoryImpl(booruApis))
         return inflater.inflate(R.layout.fragment_searchbar, container, false)
     }
@@ -269,7 +275,13 @@ abstract class SearchBarFragment : BaseFragment(), SearchBar.Helper,
     }
 
     override fun onClickTitle() {
-
+        historyViewModel.loadHistory(activatedBooruUid).observe(this, Observer {
+            val suggestions = arrayListOf<String>()
+            it.forEach { history ->
+                suggestions.add(history.query)
+            }
+            searchBar.updateSuggestions(suggestions)
+        })
     }
 
     override fun onEditTextBackPressed() {
